@@ -37,10 +37,7 @@ Commands available in `atom-workspace`:
 - `search-panel:replace-current`: replace the current match in place,
 - `search-panel:replace-all`: replace every match,
 - `search-panel:clear-history`: clear the find and replace history,
-- `search-panel:clear`: clear the search results and fields.
-
-Commands available in `.editor:not(.mini)`:
-
+- `search-panel:clear`: clear the search results and fields,
 - `search-panel:select-next`: select the next match,
 - `search-panel:select-all`: select all matches,
 - `search-panel:select-skip`: skip the current match and select the next,

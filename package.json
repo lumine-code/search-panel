@@ -58,6 +58,8 @@
       "search-panel:replace-all",
       "search-panel:select-next",
       "search-panel:select-all",
+      "search-panel:select-skip",
+      "search-panel:select-undo",
       "search-panel:clear-history"
     ]
   },

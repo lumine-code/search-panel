@@ -2,6 +2,10 @@ describe("search-panel select-next commands", () => {
   let editor, editorElement;
 
   beforeEach(async () => {
+    // The select-next commands are registered on atom-workspace, so the editor
+    // has to be where it really is — inside the workspace — rather than an
+    // orphan element a dispatch can never bubble out of.
+    jasmine.attachToDOM(atom.workspace.getElement());
     editor = await atom.workspace.open();
     editor.setText("foo bar\nfoo baz\nfoo qux\n");
     editorElement = atom.views.getView(editor);
