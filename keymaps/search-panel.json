@@ -3,7 +3,10 @@
     "cmdorctrl-shift-f": "search-panel:project-show",
     "cmdorctrl-f": "search-panel:show"
   },
-  "atom-workspace-axis.vertical atom-text-editor": {
+  // Not `atom-workspace-axis.vertical atom-text-editor`: the left and right
+  // panel containers hang off the horizontal axis, so that spelling made every
+  // one of these dead for an editor opened in a side dock.
+  "atom-text-editor:not([mini])": {
     "f3": "search-panel:find-next",
     "shift-f3": "search-panel:find-previous",
     "cmdorctrl-f3": "search-panel:clear",
@@ -12,6 +15,8 @@
     "cmdorctrl-f4": "search-panel:replace-all",
     "alt-f": "search-panel:use-selection-as-replace-pattern"
   },
+  // One block per selector rather than a comma list: calculateSpecificity
+  // truncates at the first comma, so every branch would be scored as the first.
   ".search-panel": {
     "f3": "search-panel:find-next",
     "shift-f3": "search-panel:find-previous",
@@ -27,7 +32,10 @@
     "cmdorctrl-alt-c": "search-panel:toggle-case-option",
     "cmdorctrl-alt-s": "search-panel:toggle-selection-option",
     "cmdorctrl-alt-w": "search-panel:toggle-whole-word-option",
-    "ctrl-shift-c": "search-panel:toggle-case-option"
+    "ctrl-shift-c": "search-panel:toggle-case-option",
+    "cmdorctrl-shift-x": "search-panel:clear",
+    "tab": "search-panel:focus-next",
+    "shift-tab": "search-panel:focus-previous"
   },
   ".search-panel-project": {
     "cmdorctrl-f3": "search-panel:clear",
@@ -37,14 +45,10 @@
     "cmdorctrl-alt-/": "search-panel:project-toggle-regex-option",
     "cmdorctrl-alt-c": "search-panel:project-toggle-case-option",
     "cmdorctrl-alt-w": "search-panel:project-toggle-whole-word-option",
-    "ctrl-shift-c": "search-panel:project-toggle-case-option"
-  },
-  ".search-panel, .search-panel-project, .search-panel-project .results-view": {
+    "ctrl-shift-c": "search-panel:project-toggle-case-option",
+    "cmdorctrl-shift-x": "search-panel:clear",
     "tab": "search-panel:focus-next",
     "shift-tab": "search-panel:focus-previous"
-  },
-  ".search-panel, .search-panel-project": {
-    "cmdorctrl-shift-x": "search-panel:clear"
   },
   ".search-panel .replace-container atom-text-editor": {
     "cmdorctrl-enter": "search-panel:replace-all"
@@ -52,6 +56,11 @@
   ".search-panel-project .replace-container atom-text-editor": {
     "cmdorctrl-enter": "search-panel:project-replace-all"
   },
+  // The results view is its own pane item, not a descendant of the project
+  // panel, which is why the `.search-panel-project .results-view` block that
+  // used to carry tab and shift-tab could never fire. focus-next is registered
+  // on the project view's element, so reaching it from here needs more than a
+  // selector.
   ".results-view": {
     "home": "core:move-to-top",
     "ctrl-home": "core:move-to-top",
