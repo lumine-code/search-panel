@@ -2,11 +2,20 @@
   "context-menu": {
     ".tree-view li.directory:not(.tree-view-special-root)": [
       {
+        "type": "separator"
+      },
+      {
         "label": "Search in Folder",
         "command": "search-panel:project-show-in-current-directory"
+      },
+      {
+        "type": "separator"
       }
     ],
     ".list-item.match-row": [
+      {
+        "type": "separator"
+      },
       {
         "label": "Open in New Tab",
         "command": "search-panel:open-in-new-tab"
@@ -18,9 +27,15 @@
       {
         "label": "Copy Path",
         "command": "search-panel:copy-path"
+      },
+      {
+        "type": "separator"
       }
     ],
     ".list-item.path-row": [
+      {
+        "type": "separator"
+      },
       {
         "label": "Open in New Tab",
         "command": "search-panel:open-in-new-tab"
@@ -28,6 +43,9 @@
       {
         "label": "Copy Path",
         "command": "search-panel:copy-path"
+      },
+      {
+        "type": "separator"
       }
     ]
   }
