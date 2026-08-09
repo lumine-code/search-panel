@@ -39,7 +39,7 @@
     "format:check": "prettier --check ."
   },
   "activationCommands": {
-    "atom-workspace": [
+    "lumine-workspace": [
       "search-panel:project-show",
       "search-panel:project-toggle",
       "search-panel:project-show-in-current-directory",

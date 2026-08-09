@@ -6,10 +6,10 @@ describe("BufferSearch", () => {
 
   beforeEach(() => {
     for (const key of ["useRegex", "caseSensitive", "wholeWord", "inCurrentSelection"]) {
-      atom.config.set(`search-panel.${key}`, false);
+      lumine.config.set(`search-panel.${key}`, false);
     }
 
-    editor = atom.workspace.buildTextEditor();
+    editor = lumine.workspace.buildTextEditor();
     editor.setText("one two One\none oneone\ntwo one\n");
 
     model = new BufferSearch(new FindOptions());
@@ -87,16 +87,16 @@ describe("BufferSearch", () => {
 
   describe("the VCS-ignored files option", () => {
     it("defaults to the core VCS ignore preference", () => {
-      const originalValue = atom.config.get("core.excludeVcsIgnoredPaths");
+      const originalValue = lumine.config.get("core.excludeVcsIgnoredPaths");
 
       try {
-        atom.config.set("core.excludeVcsIgnoredPaths", true);
+        lumine.config.set("core.excludeVcsIgnoredPaths", true);
         expect(new FindOptions().includeVcsIgnoredPaths).toBe(false);
 
-        atom.config.set("core.excludeVcsIgnoredPaths", false);
+        lumine.config.set("core.excludeVcsIgnoredPaths", false);
         expect(new FindOptions().includeVcsIgnoredPaths).toBe(true);
       } finally {
-        atom.config.set("core.excludeVcsIgnoredPaths", originalValue);
+        lumine.config.set("core.excludeVcsIgnoredPaths", originalValue);
       }
     });
   });

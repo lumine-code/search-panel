@@ -1,5 +1,5 @@
 /* result markers */
-atom-text-editor {
+lumine-text-editor {
   .find-result .region,
   .current-result .region {
     background-color: var(--syntax-result-marker-color);
@@ -21,8 +21,8 @@ atom-text-editor {
   }
 }
 
-atom-workspace.find-visible {
-  atom-text-editor {
+lumine-workspace.find-visible {
+  lumine-text-editor {
     .find-result,
     .current-result {
       display: block;
@@ -130,7 +130,7 @@ atom-workspace.find-visible {
 
   .editor-container {
     position: relative;
-    atom-text-editor {
+    lumine-text-editor {
       width: 100%;
     }
   }
@@ -173,7 +173,7 @@ atom-workspace.find-visible {
     flex: 2;
   }
 
-  .find-container atom-text-editor {
+  .find-container lumine-text-editor {
     padding-right: calc(var(--ui-size) * 5);
   }
 
@@ -393,7 +393,7 @@ atom-workspace.find-visible {
 
 /* Colorize the find editor based on whether it has results. */
 .search-panel-editor {
-  &.has-no-results .find-container atom-text-editor[mini].is-focused {
+  &.has-no-results .find-container lumine-text-editor[mini].is-focused {
     border-color: var(--text-color-error);
     box-shadow: 0 0 0 1px var(--text-color-error);
     background-color: color-mix(
@@ -415,7 +415,7 @@ atom-workspace.find-visible {
     }
   }
 
-  &.has-results .find-container atom-text-editor[mini].is-focused {
+  &.has-results .find-container lumine-text-editor[mini].is-focused {
     border-color: var(--text-color-success);
     box-shadow: 0 0 0 1px var(--text-color-success);
     background-color: color-mix(
@@ -446,8 +446,8 @@ atom-workspace.find-visible {
   }
 }
 
-.find-container atom-text-editor,
-.replace-container atom-text-editor {
+.find-container lumine-text-editor,
+.replace-container lumine-text-editor {
   /* Styles for regular expression highlighting */
   .syntax--regexp {
     .syntax--escape {

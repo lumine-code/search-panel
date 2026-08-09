@@ -1,12 +1,12 @@
 {
-  "atom-workspace": {
+  "lumine-workspace": {
     "cmdorctrl-shift-f": "search-panel:project-show",
     "cmdorctrl-f": "search-panel:show"
   },
-  // Not `atom-workspace-axis.vertical atom-text-editor`: the left and right
+  // Not `lumine-workspace-axis.vertical lumine-text-editor`: the left and right
   // panel containers hang off the horizontal axis, so that spelling made every
   // one of these dead for an editor opened in a side dock.
-  "atom-text-editor:not([mini])": {
+  "lumine-text-editor:not([mini])": {
     "f3": "search-panel:find-next",
     "shift-f3": "search-panel:find-previous",
     "cmdorctrl-f3": "search-panel:clear",
@@ -50,10 +50,10 @@
     "tab": "search-panel:focus-next",
     "shift-tab": "search-panel:focus-previous"
   },
-  ".search-panel .replace-container atom-text-editor": {
+  ".search-panel .replace-container lumine-text-editor": {
     "cmdorctrl-enter": "search-panel:replace-all"
   },
-  ".search-panel-project .replace-container atom-text-editor": {
+  ".search-panel-project .replace-container lumine-text-editor": {
     "cmdorctrl-enter": "search-panel:project-replace-all"
   },
   // The results view is its own pane item, not a descendant of the project

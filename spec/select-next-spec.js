@@ -2,21 +2,21 @@ describe("search-panel select-next commands", () => {
   let editor, editorElement;
 
   beforeEach(async () => {
-    // The select-next commands are registered on atom-workspace, so the editor
+    // The select-next commands are registered on lumine-workspace, so the editor
     // has to be where it really is — inside the workspace — rather than an
     // orphan element a dispatch can never bubble out of.
-    jasmine.attachToDOM(atom.workspace.getElement());
-    editor = await atom.workspace.open();
+    jasmine.attachToDOM(lumine.workspace.getElement());
+    editor = await lumine.workspace.open();
     editor.setText("foo bar\nfoo baz\nfoo qux\n");
-    editorElement = atom.views.getView(editor);
+    editorElement = lumine.views.getView(editor);
 
     // search-panel activates on command, so trigger one and await activation.
-    const activationPromise = atom.packages.activatePackage("search-panel");
-    atom.commands.dispatch(atom.views.getView(atom.workspace), "search-panel:show");
+    const activationPromise = lumine.packages.activatePackage("search-panel");
+    lumine.commands.dispatch(lumine.views.getView(lumine.workspace), "search-panel:show");
     await activationPromise;
   });
 
-  const dispatch = (command) => atom.commands.dispatch(editorElement, command);
+  const dispatch = (command) => lumine.commands.dispatch(editorElement, command);
   const selectedTexts = () => editor.getSelections().map((s) => s.getText());
 
   it("selects the word under the cursor, then the next occurrence", () => {

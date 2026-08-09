@@ -17,7 +17,7 @@ To install `search-panel` search for _search-panel_ in the Install pane of the L
 
 ## Commands
 
-Commands available in `atom-workspace`:
+Commands available in `lumine-workspace`:
 
 - `search-panel:show`: show the buffer find panel,
 - `search-panel:toggle`: toggle the buffer find panel,

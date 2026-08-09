@@ -68,7 +68,7 @@ type SearchControl = {
 module.exports = {
   consumeSearchControl(search) {
     return search.onDidUpdate(() => {
-      const editor = atom.workspace.getActiveTextEditor();
+      const editor = lumine.workspace.getActiveTextEditor();
       if (!editor) return;
       const layer = search.resultsMarkerLayerForTextEditor(editor);
       this.drawMarkers(layer.getMarkers().map((m) => m.getStartScreenPosition().row));
