@@ -63,6 +63,20 @@ describe("search-panel integration", () => {
       expect(editor.getText()).not.toContain("one");
       expect((editor.getText().match(/1/g) || []).length).toBe(3);
     });
+
+    jasmine.itWithDocumentFocus("clears the search fields without focusing the panel", () => {
+      const outsideElement = document.createElement("button");
+      jasmine.attachToDOM(outsideElement);
+      mainModule.findView.findEditor.setText("one");
+      mainModule.findView.replaceEditor.setText("1");
+      outsideElement.focus();
+
+      lumine.commands.dispatch(workspaceElement, "search-panel:clear");
+
+      expect(mainModule.findView.findEditor.getText()).toBe("");
+      expect(mainModule.findView.replaceEditor.getText()).toBe("");
+      expect(outsideElement).toHaveFocus();
+    });
   });
 
   describe("the project find panel", () => {
@@ -122,6 +136,23 @@ describe("search-panel integration", () => {
 
       expect(mainModule.resultsModel.getFindOptions().includeVcsIgnoredPaths).toBe(true);
       expect(button.classList.contains("selected")).toBe(true);
+    });
+
+    jasmine.itWithDocumentFocus("clears the search fields without focusing the panel", () => {
+      const outsideElement = document.createElement("button");
+      jasmine.attachToDOM(outsideElement);
+      lumine.commands.dispatch(workspaceElement, "search-panel:project-show");
+      mainModule.projectFindView.findEditor.setText("one");
+      mainModule.projectFindView.replaceEditor.setText("1");
+      mainModule.projectFindView.pathsEditor.setText("src");
+      outsideElement.focus();
+
+      lumine.commands.dispatch(workspaceElement, "search-panel:clear");
+
+      expect(mainModule.projectFindView.findEditor.getText()).toBe("");
+      expect(mainModule.projectFindView.replaceEditor.getText()).toBe("");
+      expect(mainModule.projectFindView.pathsEditor.getText()).toBe("");
+      expect(outsideElement).toHaveFocus();
     });
   });
 });
