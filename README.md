@@ -13,7 +13,7 @@ Find and replace within buffers and across the project.
 
 ## Installation
 
-To install `search-panel` search for _search-panel_ in the Install pane of the Lumine settings or run `lumine --install lumine-code/search-panel`.
+To install `search-panel` search for it in the Install pane of the Lumine settings, or run the command `lumine --install lumine-code/search-panel`.
 
 ## Commands
 
@@ -71,9 +71,7 @@ Commands available in `.results-view`:
 
 ## Customization
 
-Both find panels share a `search-panel` root class (`search-panel-editor` and
-`search-panel-project` mark the buffer and project panels). Restyle them in your
-`styles.css`:
+Both find panels share a `search-panel` root class (`search-panel-editor` and `search-panel-project` mark the buffer and project panels). Restyle them in your `styles.css`:
 
 ```css
 .search-panel {
@@ -85,9 +83,9 @@ Both find panels share a `search-panel` root class (`search-panel-editor` and
 
 ## Services
 
-- **[search.control](docs/search.control.md)** (`1.0.0`): provided to expose find options, panel visibility controls, and programmatic search triggers.
-- **autocomplete.watch-editor** (`^1.0.0`): consumed to enable autocompletion in the find fields.
-- **[search.adapter](docs/search.adapter.md)** (`^1.0.0`): consumed to let non-editor pane items be searched through the buffer find panel.
+- [`search.control`](docs/search.control.md): provided to expose find options, panel visibility controls, and programmatic search triggers.
+- `autocomplete.watch-editor`: consumed to enable autocompletion in the find fields.
+- [`search.adapter`](docs/search.adapter.md): consumed to let non-editor pane items be searched through the buffer find panel.
 
 ## Contributing
 
