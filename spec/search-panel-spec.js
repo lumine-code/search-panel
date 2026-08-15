@@ -54,6 +54,35 @@ describe("search-panel integration", () => {
       expect(editor.getText()).not.toContain("two");
     });
 
+    // A pattern with several matches, so the move after the replacement has
+    // somewhere to land: navigate() beeps out early once the last result is
+    // gone, and would leave focus wherever it already was.
+    jasmine.itWithDocumentFocus("replaces without pulling focus out of the editor", () => {
+      jasmine.attachToDOM(workspaceElement);
+      lumine.commands.dispatch(workspaceElement, "search-panel:show");
+      mainModule.findView.findEditor.setText("one");
+      mainModule.findView.replaceEditor.setText("1");
+      editor.element.focus();
+
+      lumine.commands.dispatch(editor.element, "search-panel:replace-next");
+
+      expect(editor.getText()).toContain("1");
+      expect(mainModule.findView.element.contains(document.activeElement)).toBe(false);
+    });
+
+    jasmine.itWithDocumentFocus("keeps focus in the replace field when confirming from it", () => {
+      jasmine.attachToDOM(workspaceElement);
+      lumine.commands.dispatch(workspaceElement, "search-panel:show");
+      mainModule.findView.findEditor.setText("one");
+      mainModule.findView.replaceEditor.setText("1");
+      mainModule.findView.replaceEditor.element.focus();
+
+      lumine.commands.dispatch(mainModule.findView.replaceEditor.element, "core:confirm");
+
+      expect(editor.getText()).toContain("1");
+      expect(mainModule.findView.replaceEditor.element).toHaveFocus();
+    });
+
     it("replaces every match", () => {
       lumine.commands.dispatch(workspaceElement, "search-panel:show");
       mainModule.findView.findEditor.setText("one");
