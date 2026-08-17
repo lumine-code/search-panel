@@ -368,6 +368,25 @@ lumine-workspace.find-visible {
       color: var(--text-color-selected);
     }
 
+    /* Matches repeat on every row, so the themes' solid .highlight-* badge
+       background is too loud here: tone it down to a translucent tint and let
+       the text keep the row's color. */
+    .highlight-info,
+    .highlight-error,
+    .highlight-success {
+      color: inherit;
+      text-shadow: none;
+    }
+    .highlight-info {
+      background-color: color-mix(in srgb, var(--background-color-info) 25%, transparent);
+    }
+    .highlight-error {
+      background-color: color-mix(in srgb, var(--background-color-error) 25%, transparent);
+    }
+    .highlight-success {
+      background-color: color-mix(in srgb, var(--background-color-success) 25%, transparent);
+    }
+
     .selected {
       .highlight-info {
         box-shadow: inset 0 0 1px hsl(from var(--background-color-info) h s calc(l + 50));
