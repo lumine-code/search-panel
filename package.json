@@ -143,6 +143,32 @@
       "description": "Clear the search and replace fields when closing the find panel.",
       "type": "boolean",
       "default": false
+    },
+    "marker": {
+      "title": "Marker",
+      "description": "Settings of the search-panel layer drawn on the scrollbar and minimap by the marker hub.",
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "description": "Show search results on the scrollbar and minimap.",
+          "type": "boolean",
+          "default": true
+        },
+        "permanent": {
+          "title": "Permanent view",
+          "description": "Keep markers visible even when the find panel is closed.",
+          "type": "boolean",
+          "default": true
+        },
+        "threshold": {
+          "title": "Threshold",
+          "description": "Hide markers if count exceeds this value. Zero means no limit.",
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        }
+      }
     }
   },
   "providedServices": {
@@ -150,6 +176,11 @@
       "description": "Search panel service with find options, panel controls, and search triggers",
       "versions": {
         "1.0.0": "provideSearchControl"
+      }
+    },
+    "marker.layer": {
+      "versions": {
+        "1.0.0": "provideMarkerLayer"
       }
     }
   },

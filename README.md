@@ -10,6 +10,7 @@ Find and replace within buffers and across the project.
 - **Search options**: toggle regex, case sensitivity, whole word, and within-selection.
 - **Multiple selections**: select matching ranges to edit them simultaneously.
 - **Search adapters**: search custom pane items such as data grids when they expose an adapter.
+- **Scrollbar markers**: shows the search results on the scrollbar and minimap via the marker hub.
 
 ## Installation
 
@@ -84,6 +85,7 @@ Both find panels share a `search-panel` root class (`search-panel-editor` and `s
 ## Services
 
 - [`search.control`](docs/search.control.md): provided to expose find options, panel visibility controls, and programmatic search triggers.
+- `marker.layer`: provided to draw the search results on the editor's overview maps (scrollbar, minimap).
 - `autocomplete.watch-editor`: consumed to enable autocompletion in the find fields.
 - [`search.adapter`](docs/search.adapter.md): consumed to let non-editor pane items be searched through the buffer find panel.
 

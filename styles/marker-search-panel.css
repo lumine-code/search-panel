@@ -1,0 +1,4 @@
+.marker.marker-search-panel {
+  z-index: 16;
+  background-color: var(--ui-site-color-2);
+}

@@ -109,7 +109,7 @@ describe("search-panel integration", () => {
   });
 
   describe("the project find panel", () => {
-    it("does not create the buffer panel when its command activates the package", async () => {
+    it("does not show the buffer panel when its command activates the package", async () => {
       await lumine.packages.deactivatePackage("search-panel");
 
       const activationPromise = lumine.packages.activatePackage("search-panel");
@@ -117,7 +117,9 @@ describe("search-panel integration", () => {
       const pkg = await activationPromise;
       mainModule = pkg.mainModule;
 
-      expect(mainModule.findPanel).toBeNull();
+      // The marker layer's visibility subscription creates the buffer panel at
+      // activation, so existence is no longer the tell — visibility is.
+      expect(mainModule.findPanel.isVisible()).toBe(false);
       expect(mainModule.projectFindPanel.isVisible()).toBe(true);
     });
 
