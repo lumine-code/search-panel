@@ -36,6 +36,29 @@ describe("BufferSearch", () => {
     expect(model.markers.length).toBe(0);
   });
 
+  it("updates the current result once when a multi-selection moves", () => {
+    model.search("one");
+    editor.setSelectedBufferRanges([
+      [
+        [0, 0],
+        [0, 0],
+      ],
+      [
+        [1, 0],
+        [1, 0],
+      ],
+      [
+        [2, 0],
+        [2, 0],
+      ],
+    ]);
+    const findMarker = spyOn(model, "findMarker").and.callThrough();
+
+    editor.selectRight();
+
+    expect(findMarker.calls.count()).toBe(1);
+  });
+
   describe("the case-sensitive option", () => {
     it("matches any case when disabled", () => {
       model.search("one", { caseSensitive: false });
