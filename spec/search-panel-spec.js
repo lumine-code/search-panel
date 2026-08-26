@@ -1,3 +1,11 @@
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const etch = require("@lumine-code/etch");
+const ResultsModel = require("../lib/results-model");
+const ResultsPaneView = require("../lib/results-pane");
+const { Result } = ResultsModel;
+
 describe("search-panel integration", () => {
   let workspaceElement, editor, mainModule;
 
@@ -21,6 +29,83 @@ describe("search-panel integration", () => {
       expect(typeof service.projectSearch).toBe("function");
       expect(typeof service.showFind).toBe("function");
       expect(typeof service.resultsMarkerLayerForTextEditor).toBe("function");
+    });
+
+    it("releases detached result models and destroys the remaining models on deactivation", async () => {
+      const sharedModel = mainModule.resultsModel;
+      const detachedModel = mainModule.createResultsModel(mainModule.findOptions);
+      spyOn(sharedModel, "destroy").and.callThrough();
+      spyOn(detachedModel, "destroy").and.callThrough();
+
+      mainModule.destroyResultsModel(detachedModel);
+
+      expect(detachedModel.destroy.calls.count()).toBe(1);
+      expect(mainModule.resultsModels.has(detachedModel)).toBe(false);
+
+      await lumine.packages.deactivatePackage("search-panel");
+
+      expect(sharedModel.destroy).toHaveBeenCalled();
+      expect(detachedModel.destroy.calls.count()).toBe(1);
+    });
+
+    it("reattaches a detached results pane to the shared model and its events", async () => {
+      mainModule.createProjectFindView();
+      const pane = new ResultsPaneView();
+
+      await pane.dontOverrideTab();
+      const detachedModel = pane.model;
+      const sharedModel = mainModule.projectFindView.model;
+      spyOn(detachedModel, "destroy").and.callThrough();
+
+      const firstResult = Result.create({
+        filePath: "C:\\project\\first.txt",
+        matches: [
+          {
+            range: [
+              [0, 0],
+              [0, 3],
+            ],
+            matchText: "one",
+            lineText: "one",
+          },
+        ],
+      });
+      sharedModel.addResult(firstResult.filePath, firstResult);
+
+      await pane.dontOverrideTab();
+
+      expect(pane.model).toBe(sharedModel);
+      expect(pane.refs.resultsView.model).toBe(sharedModel);
+      expect(pane.refs.resultsView.resultRowGroups.map((group) => group.result.filePath)).toEqual([
+        firstResult.filePath,
+      ]);
+      expect(detachedModel.destroy.calls.count()).toBe(1);
+      expect(mainModule.resultsModels.has(detachedModel)).toBe(false);
+
+      const secondResult = Result.create({
+        filePath: "C:\\project\\second.txt",
+        matches: [
+          {
+            range: [
+              [0, 0],
+              [0, 3],
+            ],
+            matchText: "two",
+            lineText: "two",
+          },
+        ],
+      });
+      sharedModel.addResult(secondResult.filePath, secondResult);
+      sharedModel.emitter.emit("did-finish-searching", sharedModel.getResultsSummary());
+
+      expect(pane.refs.resultsView.resultRowGroups.map((group) => group.result.filePath)).toEqual([
+        firstResult.filePath,
+        secondResult.filePath,
+      ]);
+      expect(pane.searchResults.matchCount).toBe(2);
+
+      pane.destroy();
+      await etch.destroy(pane);
     });
   });
 
@@ -109,6 +194,47 @@ describe("search-panel integration", () => {
   });
 
   describe("the project find panel", () => {
+    it("searches and replaces project files on disk while preserving a dirty buffer", async () => {
+      const projectDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "search-panel-replace-"));
+      const openPath = path.join(projectDirectory, "open.txt");
+      const closedPath = path.join(projectDirectory, "closed.txt");
+      const openDiskText = "alpha beta disk";
+      const openBufferText = "dirty buffer without matches";
+      fs.writeFileSync(openPath, openDiskText);
+      fs.writeFileSync(closedPath, "alpha beta disk");
+      let projectEditor;
+
+      try {
+        lumine.project.setPaths([projectDirectory]);
+        projectEditor = await lumine.workspace.open(openPath);
+        projectEditor.setText(openBufferText);
+
+        const model = mainModule.resultsModel;
+        await model.search("\\b(alpha|beta)\\b", "", "x$1x", {
+          useRegex: true,
+          caseSensitive: true,
+        });
+
+        expect(model.getPathCount()).toBe(2);
+        expect(model.getMatchCount()).toBe(4);
+
+        await model.replace("", "x$1x", model.getPaths());
+
+        const summary = model.getResultsSummary();
+        expect(summary.replacedPathCount).toBe(2);
+        expect(summary.replacementCount).toBe(4);
+        expect(summary.matchCount).toBe(0);
+        expect(projectEditor.getText()).toBe(openBufferText);
+        expect(projectEditor.isModified()).toBe(true);
+        expect(fs.readFileSync(openPath, "utf8")).toBe("xalphax xbetax disk");
+        expect(fs.readFileSync(closedPath, "utf8")).toBe("xalphax xbetax disk");
+      } finally {
+        projectEditor?.destroy();
+        lumine.project.setPaths([]);
+        fs.rmSync(projectDirectory, { recursive: true, force: true });
+      }
+    });
+
     it("does not show the buffer panel when its command activates the package", async () => {
       await lumine.packages.deactivatePackage("search-panel");
 
