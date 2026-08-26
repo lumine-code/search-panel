@@ -225,7 +225,7 @@ describe("search-panel integration", () => {
         expect(summary.replacementCount).toBe(4);
         expect(summary.matchCount).toBe(0);
         expect(projectEditor.getText()).toBe(openBufferText);
-        expect(projectEditor.isModified()).toBe(true);
+        expect(projectEditor.getFileState()).toBe("modified");
         expect(fs.readFileSync(openPath, "utf8")).toBe("xalphax xbetax disk");
         expect(fs.readFileSync(closedPath, "utf8")).toBe("xalphax xbetax disk");
       } finally {
