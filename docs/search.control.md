@@ -55,12 +55,12 @@ type SearchControl = {
 };
 ```
 
-| Group      | Notes                                                                                                                           |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Results    | `resultsMarkerLayerForTextEditor` gives the live marker layer of the current matches — this is what a scrollbar overview draws. |
-| Options    | `getFindOptions()` returns the live options object, including the pattern, the regex and case flags, and the paths filter.      |
-| Visibility | Showing one panel hides the other; `showReplace` opens find with the replace field focused.                                     |
-| Triggers   | `search` runs a buffer search in the active editor; `projectSearch` sets the pattern and path filter and runs a project search. |
+| Group      | Notes                                                                                                                                                               |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Results    | `resultsMarkerLayerForTextEditor` gives the live marker layer of the current matches — this is what a scrollbar overview draws.                                     |
+| Options    | `getFindOptions()` returns the live options object, including the pattern, regex and case flags, paths filter, `useCoreIgnoredNames`, and `excludeVcsIgnoredPaths`. |
+| Visibility | Showing one panel hides the other; `showReplace` opens find with the replace field focused.                                                                         |
+| Triggers   | `search` runs a buffer search in the active editor; `projectSearch` sets the pattern and path filter and runs a project search.                                     |
 
 ## Minimal example
 
@@ -84,6 +84,8 @@ module.exports = {
 `resultsMarkerLayerForTextEditor` returns the layer for that editor whether or not a search is running; it is simply empty when there are no matches. The markers are live, so read positions when you need them.
 
 `onDidUpdate` fires on every result-set change, including one that clears the results.
+
+Project discovery options use backend polarity: `useCoreIgnoredNames` applies both `core.ignoredNames` and the additional `search-panel.ignoredNames`, while `excludeVcsIgnoredPaths` applies repository ignore rules. The panel presents their inverses as independent Include Ignored Names and Include VCS-Ignored Paths buttons for the current search; changing either button does not write configuration.
 
 ## Teardown
 

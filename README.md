@@ -7,7 +7,7 @@ Find and replace within buffers and across the project.
 - **Buffer search**: find, highlight, and navigate matches in the active editor.
 - **Project search**: search and replace across the project with ripgrep or scandal.
 - **In-place replace**: replace matches without a full buffer refresh.
-- **Search options**: toggle regex, case sensitivity, whole word, and within-selection.
+- **Search options**: toggle regex, case sensitivity, whole word, within-selection, and whether project searches include ignored names or VCS-ignored paths.
 - **Multiple selections**: select matching ranges to edit them simultaneously.
 - **Search adapters**: search custom pane items such as data grids when they expose an adapter.
 - **Scrollbar markers**: shows the search results on the scrollbar and minimap via the marker hub.
@@ -62,6 +62,8 @@ Commands available in `.search-panel-project`:
 - `search-panel:project-toggle-regex-option`: toggle the regular-expression option,
 - `search-panel:project-toggle-case-option`: toggle the case-sensitivity option,
 - `search-panel:project-toggle-whole-word-option`: toggle the whole-word option,
+- `search-panel:project-toggle-include-ignored-names-option`: include names excluded by the core and package ignore lists,
+- `search-panel:project-toggle-include-vcs-ignored-paths-option`: include paths excluded by repository ignore rules,
 - `search-panel:focus-next`: move focus to the next field,
 - `search-panel:focus-previous`: move focus to the previous field.
 

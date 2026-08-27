@@ -108,16 +108,17 @@ describe("BufferSearch", () => {
     });
   });
 
-  describe("the VCS-ignored files option", () => {
-    it("defaults to the core VCS ignore preference", () => {
+  describe("the project discovery options", () => {
+    it("defaults to core ignored names and the core VCS ignore preference", () => {
       const originalValue = lumine.config.get("core.excludeVcsIgnoredPaths");
 
       try {
         lumine.config.set("core.excludeVcsIgnoredPaths", true);
-        expect(new FindOptions().includeVcsIgnoredPaths).toBe(false);
+        expect(new FindOptions().useCoreIgnoredNames).toBe(true);
+        expect(new FindOptions().excludeVcsIgnoredPaths).toBe(true);
 
         lumine.config.set("core.excludeVcsIgnoredPaths", false);
-        expect(new FindOptions().includeVcsIgnoredPaths).toBe(true);
+        expect(new FindOptions().excludeVcsIgnoredPaths).toBe(false);
       } finally {
         lumine.config.set("core.excludeVcsIgnoredPaths", originalValue);
       }

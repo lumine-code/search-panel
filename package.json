@@ -126,6 +126,15 @@
       "type": "boolean",
       "default": false
     },
+    "ignoredNames": {
+      "title": "Ignored Names",
+      "description": "Additional file and directory names to exclude from project searches. The project-wide core ignored names are also used by default.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
     "autocompleteSearches": {
       "title": "Autocomplete search",
       "description": "Autocompletes entries in the find search field.",

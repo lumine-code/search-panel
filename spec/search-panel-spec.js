@@ -267,21 +267,36 @@ describe("search-panel integration", () => {
         "option-pcre2",
         "option-case-sensitive",
         "option-whole-word",
+        "option-include-ignored-names",
         "option-include-vcs-ignored-paths",
       ]);
     });
 
-    it("includes VCS-ignored files only when its option is selected", () => {
+    it("includes ignored names only for the current search when selected", () => {
+      lumine.commands.dispatch(workspaceElement, "search-panel:project-show");
+      const button = workspaceElement.querySelector(".option-include-ignored-names");
+
+      expect(mainModule.resultsModel.getFindOptions().useCoreIgnoredNames).toBe(true);
+      expect(button.classList.contains("selected")).toBe(false);
+
+      button.click();
+
+      expect(lumine.config.get("search-panel.ignoredNames")).toEqual([]);
+      expect(mainModule.resultsModel.getFindOptions().useCoreIgnoredNames).toBe(false);
+      expect(button.classList.contains("selected")).toBe(true);
+    });
+
+    it("includes VCS-ignored files only for the current search when selected", () => {
       lumine.commands.dispatch(workspaceElement, "search-panel:project-show");
       const button = workspaceElement.querySelector(".option-include-vcs-ignored-paths");
 
-      expect(mainModule.resultsModel.getFindOptions().includeVcsIgnoredPaths).toBe(false);
+      expect(mainModule.resultsModel.getFindOptions().excludeVcsIgnoredPaths).toBe(true);
       expect(button.classList.contains("selected")).toBe(false);
 
       button.click();
 
       expect(lumine.config.get("core.excludeVcsIgnoredPaths")).toBe(true);
-      expect(mainModule.resultsModel.getFindOptions().includeVcsIgnoredPaths).toBe(true);
+      expect(mainModule.resultsModel.getFindOptions().excludeVcsIgnoredPaths).toBe(false);
       expect(button.classList.contains("selected")).toBe(true);
     });
 
@@ -291,7 +306,7 @@ describe("search-panel integration", () => {
 
       lumine.config.set("core.excludeVcsIgnoredPaths", false);
 
-      expect(mainModule.resultsModel.getFindOptions().includeVcsIgnoredPaths).toBe(true);
+      expect(mainModule.resultsModel.getFindOptions().excludeVcsIgnoredPaths).toBe(false);
       expect(button.classList.contains("selected")).toBe(true);
     });
 

@@ -102,6 +102,55 @@ describe("project search results", () => {
   });
 
   describe("lifecycle", () => {
+    it("passes the default ignored-name and VCS policies to workspace scan", async () => {
+      const findOptions = new FindOptions();
+      const model = new ResultsModel(findOptions);
+      const scanPromise = Promise.resolve();
+      scanPromise.cancel = jasmine.createSpy("cancel");
+      const scan = spyOn(lumine.workspace, "scan").and.returnValue(scanPromise);
+      const originalIgnoredNames = lumine.config.get("search-panel.ignoredNames");
+      lumine.config.set("search-panel.ignoredNames", ["generated"]);
+
+      try {
+        await model.search("needle", "", "");
+
+        expect(scan.calls.mostRecent().args[1]).toEqual(
+          jasmine.objectContaining({
+            ignoredNames: ["generated"],
+            useCoreIgnoredNames: true,
+            excludeVcsIgnoredPaths: findOptions.excludeVcsIgnoredPaths,
+          }),
+        );
+      } finally {
+        if (originalIgnoredNames === undefined) {
+          lumine.config.unset("search-panel.ignoredNames");
+        } else {
+          lumine.config.set("search-panel.ignoredNames", originalIgnoredNames);
+        }
+        model.destroy();
+      }
+    });
+
+    it("disables both ignored-name lists independently of VCS ignores", async () => {
+      const findOptions = new FindOptions();
+      findOptions.set({ useCoreIgnoredNames: false, excludeVcsIgnoredPaths: true });
+      const model = new ResultsModel(findOptions);
+      const scanPromise = Promise.resolve();
+      scanPromise.cancel = jasmine.createSpy("cancel");
+      const scan = spyOn(lumine.workspace, "scan").and.returnValue(scanPromise);
+
+      await model.search("needle", "", "");
+
+      expect(scan.calls.mostRecent().args[1]).toEqual(
+        jasmine.objectContaining({
+          ignoredNames: [],
+          useCoreIgnoredNames: false,
+          excludeVcsIgnoredPaths: true,
+        }),
+      );
+      model.destroy();
+    });
+
     it("cancels an in-progress search without emitting after destruction", async () => {
       const findOptions = new FindOptions();
       findOptions.set({ findPattern: "needle" });
