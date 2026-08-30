@@ -107,6 +107,54 @@ describe("search-panel integration", () => {
       pane.destroy();
       await etch.destroy(pane);
     });
+
+    it("rebinds result viewport observers after moving between Documents", async () => {
+      lumine.initializeDetachedPaneSurfaces({ force: true });
+      mainModule.createProjectFindView();
+      const pane = await lumine.workspace.open(ResultsPaneView.URI, { searchAllPanes: true });
+      let detachedPane = null;
+
+      try {
+        const primaryResultsObserver = pane.refs.resultsView.resizeObserver;
+        const primaryListObserver = pane.refs.resultsView.refs.listView.resizeObserver;
+        spyOn(primaryResultsObserver, "disconnect").and.callThrough();
+        spyOn(primaryListObserver, "disconnect").and.callThrough();
+
+        detachedPane = await lumine.workspace.detachPaneItem(pane, { show: false });
+        const detachedSurface = lumine.workspace.getWindowSurface(pane);
+
+        expect(pane.element.ownerDocument).toBe(detachedSurface.document);
+        expect(
+          pane.refs.resultsView.resizeObserver instanceof detachedSurface.window.ResizeObserver,
+        ).toBe(true);
+        expect(
+          pane.refs.resultsView.refs.listView.resizeObserver instanceof
+            detachedSurface.window.ResizeObserver,
+        ).toBe(true);
+        expect(primaryResultsObserver.disconnect).toHaveBeenCalledTimes(1);
+        expect(primaryListObserver.disconnect).toHaveBeenCalledTimes(1);
+
+        const detachedResultsObserver = pane.refs.resultsView.resizeObserver;
+        const detachedListObserver = pane.refs.resultsView.refs.listView.resizeObserver;
+        spyOn(detachedResultsObserver, "disconnect").and.callThrough();
+        spyOn(detachedListObserver, "disconnect").and.callThrough();
+
+        await lumine.workspace.attachDetachedPane(detachedPane);
+        detachedPane = null;
+
+        expect(pane.refs.resultsView.resizeObserver instanceof ResizeObserver).toBe(true);
+        expect(pane.refs.resultsView.refs.listView.resizeObserver instanceof ResizeObserver).toBe(
+          true,
+        );
+        expect(detachedResultsObserver.disconnect).toHaveBeenCalledTimes(1);
+        expect(detachedListObserver.disconnect).toHaveBeenCalledTimes(1);
+      } finally {
+        if (detachedPane?.isAlive?.()) await lumine.workspace.attachDetachedPane(detachedPane);
+        const ownerPane = lumine.workspace.paneForItem(pane);
+        if (ownerPane) await ownerPane.destroyItem(pane, true);
+        lumine.initializeDetachedPaneSurfaces();
+      }
+    });
   });
 
   describe("the buffer find panel", () => {
