@@ -81,7 +81,7 @@ lumine-workspace.find-visible {
 
   .close-button {
     margin-left: var(--component-padding);
-    cursor: pointer;
+    cursor: default;
     color: var(--text-color-subtle);
     &:hover {
       color: var(--text-color-highlight);
