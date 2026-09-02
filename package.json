@@ -32,6 +32,9 @@
     "You can search every file in the project at once with {{ 'search-panel:project-show' | keystroke }}",
     "You can jump to the next match without reopening the panel using {{ 'search-panel:find-next' | keystroke }}"
   ],
+  "specPackages": [
+    "language-regex"
+  ],
   "scripts": {
     "test": "lumine --test spec",
     "lint": "eslint . --max-warnings 0",

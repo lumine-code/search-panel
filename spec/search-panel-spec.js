@@ -15,6 +15,8 @@ describe("search-panel integration", () => {
     editor = await lumine.workspace.open();
     editor.setText("one two one\nthree one four\n");
 
+    await lumine.packages.activatePackage("language-regex");
+
     // search-panel activates on command, so trigger one and await activation.
     const activationPromise = lumine.packages.activatePackage("search-panel");
     lumine.commands.dispatch(workspaceElement, "search-panel:show");
@@ -110,6 +112,21 @@ describe("search-panel integration", () => {
   });
 
   describe("the buffer find panel", () => {
+    it("uses Tree-sitter grammars for regex patterns and replacements", () => {
+      mainModule.findOptions.set({ useRegex: true });
+
+      const findGrammar = mainModule.findView.findEditor.getGrammar();
+      const replaceGrammar = mainModule.findView.replaceEditor.getGrammar();
+      expect(findGrammar.scopeName).toBe("source.regexp");
+      expect(findGrammar.constructor.name).toBe("TreeSitterGrammar");
+      expect(replaceGrammar.scopeName).toBe("source.regexp.replacement");
+      expect(replaceGrammar.constructor.name).toBe("TreeSitterGrammar");
+
+      mainModule.findOptions.set({ useRegex: false });
+      expect(mainModule.findView.findEditor.getGrammar()).toBe(lumine.grammars.nullGrammar);
+      expect(mainModule.findView.replaceEditor.getGrammar()).toBe(lumine.grammars.nullGrammar);
+    });
+
     it("shows and hides with the toggle command", () => {
       lumine.commands.dispatch(workspaceElement, "search-panel:show");
       expect(mainModule.findPanel.isVisible()).toBe(true);
@@ -194,6 +211,18 @@ describe("search-panel integration", () => {
   });
 
   describe("the project find panel", () => {
+    it("uses Tree-sitter grammars for project regex patterns and replacements", () => {
+      mainModule.createProjectFindView();
+      mainModule.findOptions.set({ useRegex: true });
+
+      const findGrammar = mainModule.projectFindView.findEditor.getGrammar();
+      const replaceGrammar = mainModule.projectFindView.replaceEditor.getGrammar();
+      expect(findGrammar.scopeName).toBe("source.regexp");
+      expect(findGrammar.constructor.name).toBe("TreeSitterGrammar");
+      expect(replaceGrammar.scopeName).toBe("source.regexp.replacement");
+      expect(replaceGrammar.constructor.name).toBe("TreeSitterGrammar");
+    });
+
     it("searches and replaces project files on disk while preserving a dirty buffer", async () => {
       const projectDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "search-panel-replace-"));
       const openPath = path.join(projectDirectory, "open.txt");
