@@ -25,6 +25,26 @@ describe("search-panel integration", () => {
   });
 
   describe("activation and services", () => {
+    it("registers search fields as inputs until deactivation", async () => {
+      const searchEditors = [mainModule.findView.findEditor, mainModule.findView.replaceEditor];
+      mainModule.createProjectFindView();
+      searchEditors.push(
+        mainModule.projectFindView.findEditor,
+        mainModule.projectFindView.replaceEditor,
+        mainModule.projectFindView.pathsEditor,
+      );
+
+      for (const searchEditor of searchEditors) {
+        expect(lumine.textEditors.roleFor(searchEditor)).toBe("input");
+      }
+
+      await lumine.packages.deactivatePackage("search-panel");
+
+      for (const searchEditor of searchEditors) {
+        expect(lumine.textEditors.roleFor(searchEditor)).toBeNull();
+      }
+    });
+
     it("exposes the search-panel service", () => {
       const service = mainModule.provideSearchControl();
       expect(typeof service.search).toBe("function");
