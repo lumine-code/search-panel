@@ -41,31 +41,6 @@
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
-  "activationCommands": {
-    "lumine-workspace": [
-      "search-panel:project-show",
-      "search-panel:project-toggle",
-      "search-panel:project-show-in-current-directory",
-      "search-panel:show",
-      "search-panel:toggle",
-      "search-panel:find-all",
-      "search-panel:find-next",
-      "search-panel:find-previous",
-      "search-panel:find-next-selected",
-      "search-panel:find-previous-selected",
-      "search-panel:use-selection-as-find-pattern",
-      "search-panel:use-selection-as-replace-pattern",
-      "search-panel:show-replace",
-      "search-panel:replace-next",
-      "search-panel:replace-current",
-      "search-panel:replace-all",
-      "search-panel:select-next",
-      "search-panel:select-all",
-      "search-panel:select-skip",
-      "search-panel:select-undo",
-      "search-panel:clear-history"
-    ]
-  },
   "configSchema": {
     "focusEditorAfterSearch": {
       "title": "Focus editor after search",
