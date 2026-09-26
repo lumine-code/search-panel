@@ -15,6 +15,7 @@ describe("search-panel integration", () => {
     editor.setText("one two one\nthree one four\n");
 
     await lumine.packages.activatePackage("language-regex");
+    await lumine.packages.activatePackage("language-text");
 
     // search-panel activates on command, so trigger one and await activation.
     const activationPromise = lumine.packages.activatePackage("search-panel");
@@ -143,8 +144,8 @@ describe("search-panel integration", () => {
       expect(replaceGrammar.constructor.name).toBe("TreeSitterGrammar");
 
       mainModule.findOptions.set({ useRegex: false });
-      expect(mainModule.findView.findEditor.getGrammar()).toBe(lumine.grammars.nullGrammar);
-      expect(mainModule.findView.replaceEditor.getGrammar()).toBe(lumine.grammars.nullGrammar);
+      expect(mainModule.findView.findEditor.getGrammar().scopeName).toBe("text.plain");
+      expect(mainModule.findView.replaceEditor.getGrammar().scopeName).toBe("text.plain");
     });
 
     it("shows and hides with the toggle command", () => {
