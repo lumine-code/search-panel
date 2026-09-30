@@ -133,6 +133,20 @@ describe("search-panel integration", () => {
   });
 
   describe("the buffer find panel", () => {
+    it("keeps the find panel open when a dock tab is closed", async () => {
+      jasmine.attachToDOM(workspaceElement);
+      lumine.commands.dispatch(workspaceElement, "search-panel:show");
+      const element = document.createElement("div");
+      const item = { element, getTitle: () => "Dock item", getDefaultLocation: () => "left" };
+      await lumine.workspace.open(item);
+
+      await lumine.commands.dispatch(element, "core:close");
+
+      expect(mainModule.findPanel.isVisible()).toBe(true);
+      expect(lumine.workspace.getLeftDock().getPaneItems()).not.toContain(item);
+      expect(editor.isDestroyed()).toBe(false);
+    });
+
     for (const command of ["core:close", "core:cancel"]) {
       it(`hides only the find panel when ${command} comes from a search field`, async () => {
         jasmine.attachToDOM(workspaceElement);
