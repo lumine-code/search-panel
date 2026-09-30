@@ -133,51 +133,77 @@ describe("search-panel integration", () => {
   });
 
   describe("the buffer find panel", () => {
-    it("keeps the find panel open when a dock tab is closed", async () => {
+    it("keeps the find panel and dock open when close comes from a dock", async () => {
       jasmine.attachToDOM(workspaceElement);
       lumine.commands.dispatch(workspaceElement, "search-panel:show");
       const element = document.createElement("div");
       const item = { element, getTitle: () => "Dock item", getDefaultLocation: () => "left" };
       await lumine.workspace.open(item);
+      spyOn(lumine.workspace.getCenter().getActivePane(), "shouldPromptToSaveItem").and.returnValue(
+        false,
+      );
 
       await lumine.commands.dispatch(element, "core:close");
 
       expect(mainModule.findPanel.isVisible()).toBe(true);
-      expect(lumine.workspace.getLeftDock().getPaneItems()).not.toContain(item);
-      expect(editor.isDestroyed()).toBe(false);
+      expect(lumine.workspace.getLeftDock().getPaneItems()).toContain(item);
+      expect(editor.isDestroyed()).toBe(true);
     });
 
-    for (const command of ["core:close", "core:cancel"]) {
-      it(`hides only the find panel when ${command} comes from a search field`, async () => {
+    for (const surface of ["find field", "project paths field", "workspace"]) {
+      it(`closes the center editor from the ${surface} while keeping both panels open`, async () => {
         jasmine.attachToDOM(workspaceElement);
         lumine.commands.dispatch(workspaceElement, "search-panel:project-show");
         lumine.commands.dispatch(workspaceElement, "search-panel:show");
         mainModule.projectFindPanel.show();
-        spyOn(lumine.workspace, "closeActivePaneItemOrEmptyPaneOrWindow");
+        spyOn(
+          lumine.workspace.getCenter().getActivePane(),
+          "shouldPromptToSaveItem",
+        ).and.returnValue(false);
+        const target =
+          surface === "find field"
+            ? mainModule.findView.findEditor.element
+            : surface === "project paths field"
+              ? mainModule.projectFindView.pathsEditor.element
+              : workspaceElement;
 
-        await lumine.commands.dispatch(mainModule.findView.findEditor.element, command);
+        await lumine.commands.dispatch(target, "core:close");
 
-        expect(mainModule.findPanel.isVisible()).toBe(false);
-        expect(mainModule.projectFindPanel.isVisible()).toBe(true);
-        expect(lumine.workspace.closeActivePaneItemOrEmptyPaneOrWindow).not.toHaveBeenCalled();
-        expect(editor.isDestroyed()).toBe(false);
-      });
-
-      it(`hides only the project find panel when ${command} comes from its paths field`, async () => {
-        jasmine.attachToDOM(workspaceElement);
-        lumine.commands.dispatch(workspaceElement, "search-panel:show");
-        lumine.commands.dispatch(workspaceElement, "search-panel:project-show");
-        mainModule.findPanel.show();
-        spyOn(lumine.workspace, "closeActivePaneItemOrEmptyPaneOrWindow");
-
-        await lumine.commands.dispatch(mainModule.projectFindView.pathsEditor.element, command);
-
-        expect(mainModule.projectFindPanel.isVisible()).toBe(false);
+        expect(editor.isDestroyed()).toBe(true);
         expect(mainModule.findPanel.isVisible()).toBe(true);
-        expect(lumine.workspace.closeActivePaneItemOrEmptyPaneOrWindow).not.toHaveBeenCalled();
-        expect(editor.isDestroyed()).toBe(false);
+        expect(mainModule.projectFindPanel.isVisible()).toBe(true);
       });
     }
+
+    it("hides only the find panel when cancel comes from a search field", async () => {
+      jasmine.attachToDOM(workspaceElement);
+      lumine.commands.dispatch(workspaceElement, "search-panel:project-show");
+      lumine.commands.dispatch(workspaceElement, "search-panel:show");
+      mainModule.projectFindPanel.show();
+      spyOn(lumine.workspace, "closeActivePaneItemOrEmptyPaneOrWindow");
+
+      await lumine.commands.dispatch(mainModule.findView.findEditor.element, "core:cancel");
+
+      expect(mainModule.findPanel.isVisible()).toBe(false);
+      expect(mainModule.projectFindPanel.isVisible()).toBe(true);
+      expect(lumine.workspace.closeActivePaneItemOrEmptyPaneOrWindow).not.toHaveBeenCalled();
+      expect(editor.isDestroyed()).toBe(false);
+    });
+
+    it("hides only the project find panel when cancel comes from its paths field", async () => {
+      jasmine.attachToDOM(workspaceElement);
+      lumine.commands.dispatch(workspaceElement, "search-panel:show");
+      lumine.commands.dispatch(workspaceElement, "search-panel:project-show");
+      mainModule.findPanel.show();
+      spyOn(lumine.workspace, "closeActivePaneItemOrEmptyPaneOrWindow");
+
+      await lumine.commands.dispatch(mainModule.projectFindView.pathsEditor.element, "core:cancel");
+
+      expect(mainModule.projectFindPanel.isVisible()).toBe(false);
+      expect(mainModule.findPanel.isVisible()).toBe(true);
+      expect(lumine.workspace.closeActivePaneItemOrEmptyPaneOrWindow).not.toHaveBeenCalled();
+      expect(editor.isDestroyed()).toBe(false);
+    });
 
     it("uses Tree-sitter grammars for regex patterns and replacements", () => {
       mainModule.findOptions.set({ useRegex: true });
