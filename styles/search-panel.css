@@ -35,16 +35,16 @@ lumine-workspace.find-visible {
 .preview-pane,
 .search-panel-project {
   -webkit-user-select: none;
-  padding: calc(var(--ui-padding) / 4);
+  padding: calc(var(--ui-panel-padding) / 4);
   overflow-x: auto;
 
   .header {
-    padding: calc(var(--component-padding) / 4) calc(var(--component-padding) / 2);
+    padding: calc(var(--ui-spacing) / 4) calc(var(--ui-spacing) / 2);
     min-width: 200px; /* min width before it starts scrolling */
     line-height: 1.75;
   }
   .header-item {
-    margin: calc(var(--component-padding) / 4) 0;
+    margin: calc(var(--ui-spacing) / 4) 0;
   }
 
   .input-block {
@@ -56,7 +56,7 @@ lumine-workspace.find-visible {
   .input-block-item {
     display: flex;
     flex: 1;
-    padding: calc(var(--ui-padding) / 4);
+    padding: calc(var(--ui-panel-padding) / 4);
   }
 
   .btn-group {
@@ -66,7 +66,7 @@ lumine-workspace.find-visible {
       flex: 1;
     }
     & + .btn-group {
-      margin-left: var(--component-padding);
+      margin-left: var(--ui-spacing);
     }
   }
 
@@ -80,7 +80,7 @@ lumine-workspace.find-visible {
   }
 
   .close-button {
-    margin-left: var(--component-padding);
+    margin-left: var(--ui-spacing);
     cursor: default;
     color: var(--text-color-subtle);
     &:hover {
@@ -140,27 +140,27 @@ lumine-workspace.find-visible {
 .search-panel-editor {
   .header,
   .input-block {
-    min-width: calc(var(--ui-size) * 22);
+    min-width: calc(var(--ui-unit) * 22);
   }
 
   .input-block-item {
-    flex: 1 1 calc(var(--ui-size) * 22);
+    flex: 1 1 calc(var(--ui-unit) * 22);
   }
   .input-block-item--flex {
-    flex: 100 1 calc(var(--ui-size) * 22);
+    flex: 100 1 calc(var(--ui-unit) * 22);
   }
 
   .btn,
   .btn-group-options .btn {
     padding: 0;
-    font-size: calc(var(--ui-size) * 1.1);
+    font-size: calc(var(--ui-unit) * 1.1);
   }
 
   .btn-group-options .btn,
   .btn-group-options .btn.option-selection,
   .btn-group-options .btn.option-whole-word {
     padding: 0;
-    font-size: var(--ui-input-size);
+    font-size: var(--ui-input-font-size);
   }
 
   .btn-group-find,
@@ -174,7 +174,7 @@ lumine-workspace.find-visible {
   }
 
   .find-container lumine-text-editor {
-    padding-right: calc(var(--ui-size) * 5);
+    padding-right: calc(var(--ui-unit) * 5);
   }
 
   /* results count */
@@ -182,20 +182,20 @@ lumine-workspace.find-visible {
     position: absolute;
     top: 0;
     right: 0;
-    margin: calc(var(--component-padding) / 2) calc(var(--component-padding) / 2) 0 0;
+    margin: calc(var(--ui-spacing) / 2) calc(var(--ui-spacing) / 2) 0 0;
     z-index: 2;
-    font-size: var(--ui-size);
-    line-height: calc(var(--ui-size) * 2.5);
+    font-size: var(--ui-unit);
+    line-height: calc(var(--ui-unit) * 2.5);
     pointer-events: none;
     .result-counter {
-      margin-right: var(--component-padding);
+      margin-right: var(--ui-spacing);
     }
   }
 }
 
 .find-wrap-icon {
   /* Package-local values (converted from Less variables) */
-  --search-panel-wrap-size: calc(var(--font-size) * 10);
+  --search-panel-wrap-size: calc(var(--ui-font-size) * 10);
 
   opacity: 0;
   transition: opacity 0.5s;
@@ -216,7 +216,7 @@ lumine-workspace.find-visible {
   margin-left: calc(var(--search-panel-wrap-size) * -0.5);
 
   background: hsl(from var(--syntax-background-color) h s calc(l - 4) / calc(alpha - 0.55));
-  border-radius: calc(var(--component-border-radius) * 2);
+  border-radius: calc(var(--ui-border-radius) * 2);
   text-align: center;
   pointer-events: none;
   &:before {
@@ -236,24 +236,24 @@ lumine-workspace.find-visible {
 .search-panel-project {
   .header,
   .input-block {
-    min-width: calc(var(--ui-size) * 15);
+    min-width: calc(var(--ui-unit) * 15);
   }
 
   .input-block-item {
-    flex: 1 1 calc(var(--ui-size) * 14);
+    flex: 1 1 calc(var(--ui-unit) * 14);
   }
   .input-block-item--flex {
-    flex: 100 1 calc(var(--ui-size) * 20);
+    flex: 100 1 calc(var(--ui-unit) * 20);
   }
 
   .btn {
     padding: 0;
-    font-size: calc(var(--ui-size) * 1.1);
+    font-size: calc(var(--ui-unit) * 1.1);
   }
 
   .btn-group-options .btn {
     padding: 0;
-    font-size: var(--ui-input-size);
+    font-size: var(--ui-input-font-size);
   }
 
   .loading,
@@ -274,7 +274,7 @@ lumine-workspace.find-visible {
     position: relative;
     display: flex;
     flex-wrap: wrap;
-    padding: calc(var(--component-padding) / 2);
+    padding: calc(var(--ui-spacing) / 2);
     align-items: center;
     overflow: hidden;
     font-weight: normal;
@@ -283,12 +283,12 @@ lumine-workspace.find-visible {
   }
 
   .preview-count {
-    margin: calc(var(--component-padding) / 2);
+    margin: calc(var(--ui-spacing) / 2);
   }
 
   .preview-controls {
     position: absolute;
-    right: calc(var(--component-padding) / 2);
+    right: calc(var(--ui-spacing) / 2);
     top: 50%;
     transform: translateY(-50%);
     display: flex;
@@ -296,7 +296,7 @@ lumine-workspace.find-visible {
     align-items: center;
     .btn-group,
     > .block {
-      margin: calc(var(--component-padding) / 2);
+      margin: calc(var(--ui-spacing) / 2);
     }
   }
 
@@ -324,11 +324,11 @@ lumine-workspace.find-visible {
     flex: 1;
 
     .list-item {
-      padding: 0 0 0 var(--component-padding);
+      padding: 0 0 0 var(--ui-spacing);
     }
     .context-row,
     .match-row {
-      padding: 0 0 0 var(--component-padding);
+      padding: 0 0 0 var(--ui-spacing);
       margin-left: 8px;
 
       box-shadow: inset 0 1px 0
@@ -350,7 +350,7 @@ lumine-workspace.find-visible {
     }
 
     .path-match-number {
-      padding-left: var(--component-padding);
+      padding-left: var(--ui-spacing);
       color: inherit;
       opacity: 0.6;
     }
@@ -406,7 +406,7 @@ lumine-workspace.find-visible {
     /* adds some padding
        so the last item can be clicked
        when there is a horizontal scrollbar -> #943 */
-    padding-bottom: var(--component-padding);
+    padding-bottom: var(--ui-spacing);
   }
 }
 
