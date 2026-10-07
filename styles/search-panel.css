@@ -356,6 +356,7 @@ lumine-workspace.find-visible {
     }
 
     .preview {
+      font-family: var(--editor-font-family, monospace);
       word-break: break-all;
       white-space: pre;
       color: var(--text-color-subtle);
