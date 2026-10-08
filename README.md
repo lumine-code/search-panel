@@ -2,6 +2,8 @@
 
 Find and replace within buffers and across the project.
 
+Fork of [pulsar-edit/pulsar](https://github.com/pulsar-edit/pulsar) (`packages/find-and-replace`).
+
 ## Features
 
 - **Buffer search**: find, highlight, and navigate matches in the active editor.
