@@ -60,6 +60,7 @@ jobs:
         shell: bash
     env:
       LUMINE_JASMINE_REPORTER: list
+      LUMINE_DISABLE_SHELLING_OUT_FOR_ENVIRONMENT: "true"
       TEMP: ${{ github.workspace }}/search-panel-spec-tmp
       TMP: ${{ github.workspace }}/search-panel-spec-tmp
       TMPDIR: ${{ github.workspace }}/search-panel-spec-tmp
