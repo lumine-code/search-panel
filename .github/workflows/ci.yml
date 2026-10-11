@@ -60,6 +60,10 @@ jobs:
         shell: bash
     env:
       LUMINE_JASMINE_REPORTER: list
+      LUMINE_HOME: ${{ github.workspace }}/search-panel-spec-home
+      HOME: ${{ github.workspace }}/search-panel-spec-home
+      USERPROFILE: ${{ github.workspace }}/search-panel-spec-home
+      XDG_CONFIG_HOME: ${{ github.workspace }}/search-panel-spec-home
       LUMINE_DISABLE_SHELLING_OUT_FOR_ENVIRONMENT: "true"
       TEMP: ${{ github.workspace }}/search-panel-spec-tmp
       TMP: ${{ github.workspace }}/search-panel-spec-tmp
@@ -72,6 +76,9 @@ jobs:
         with:
           repository: lumine-code/lumine
           path: lumine
+      - name: Create private runtime directories
+        shell: bash
+        run: mkdir -p "$LUMINE_HOME/electronUserData" "$TEMP"
       - uses: actions/setup-node@v7
         with:
           node-version-file: lumine/.nvmrc
@@ -107,7 +114,7 @@ jobs:
         run: npm run build
       - name: Install spec dependency packages
         working-directory: lumine
-        run: node script/install-spec-packages.js --package ../search-panel --home "$RUNNER_TEMP/lumine-home" --github-env "$GITHUB_ENV"
+        run: node script/install-spec-packages.js --package ../search-panel --home "$LUMINE_HOME" --github-env "$GITHUB_ENV"
       - name: Run the Jasmine spec suite
         working-directory: lumine
         timeout-minutes: 20
