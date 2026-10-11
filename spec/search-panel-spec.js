@@ -24,6 +24,32 @@ describe("search-panel integration", () => {
     mainModule = pkg.mainModule;
   });
 
+  jasmine.itWithDocumentFocus(
+    "keeps live query updates nearest and explicit result jumps in the zone",
+    () => {
+      jasmine.attachToDOM(workspaceElement);
+      lumine.config.set("search-panel.scrollToResultOnLiveSearch", false);
+      mainModule.findView.findEditor.setText("two");
+      mainModule.findView.search();
+      mainModule.findView.findEditor.getElement().focus();
+      lumine.config.set("editor.scrollZone", [25]);
+      const scrollRequests = [];
+      const subscription = editor.onDidRequestAutoscroll((request) => scrollRequests.push(request));
+      lumine.config.set("search-panel.scrollToResultOnLiveSearch", true);
+
+      mainModule.findView.findEditor.setText("one");
+      mainModule.findView.liveSearch();
+
+      expect(editor.getSelectedText()).toBe("one");
+      expect(scrollRequests.length).toBeGreaterThan(0);
+      expect(scrollRequests.every((request) => request.options.mode[1] === 100)).toBe(true);
+      scrollRequests.length = 0;
+      mainModule.findView.findNext();
+      expect(scrollRequests.at(-1).options.mode).toEqual([25, 25]);
+      subscription.dispose();
+    },
+  );
+
   describe("activation and services", () => {
     it("registers search fields as inputs until deactivation", async () => {
       const searchEditors = [mainModule.findView.findEditor, mainModule.findView.replaceEditor];

@@ -41,14 +41,14 @@ Implement either `getActiveAdapter` — checked first, and useful when your pack
 
 The adapter itself. These are required:
 
-| Member                               | Description                                                       |
-| ------------------------------------ | ----------------------------------------------------------------- |
-| `search(findOptions)`                | Runs a search. Read the pattern and flags off the options object. |
-| `getResultCount()`                   | How many matches the last search found.                           |
-| `getCurrentResultIndex()`            | Which one is current, for the "3 of 17" counter.                  |
-| `selectNext()`, `selectPrevious()`   | Move the current match. Return the new one.                       |
-| `onDidUpdate(callback)`              | Fires when the result set changes.                                |
-| `onDidChangeCurrentResult(callback)` | Fires when the current match moves.                               |
+| Member                                             | Description                                                       |
+| -------------------------------------------------- | ----------------------------------------------------------------- |
+| `search(findOptions)`                              | Runs a search. Read the pattern and flags off the options object. |
+| `getResultCount()`                                 | How many matches the last search found.                           |
+| `getCurrentResultIndex()`                          | Which one is current, for the "3 of 17" counter.                  |
+| `selectNext(options?)`, `selectPrevious(options?)` | Move the current match with the requested scroll mode.            |
+| `onDidUpdate(callback)`                            | Fires when the result set changes.                                |
+| `onDidChangeCurrentResult(callback)`               | Fires when the current match moves.                               |
 
 And these are optional, each with a defined fallback:
 
@@ -56,8 +56,8 @@ And these are optional, each with a defined fallback:
 | ---------------------------------------------------------- | -------------------------------------------------------- |
 | `canReplace`                                               | Replace is disabled.                                     |
 | `replaceCurrentMatch(text, direction)`, `replaceAll(text)` | Only called when `canReplace` is truthy.                 |
-| `selectFirstFromCursor()`                                  | Falls back to `selectNext()`.                            |
-| `selectAll()`                                              | Select-all does nothing.                                 |
+| `selectFirstFromCursor(options?)`                          | Falls back to `selectNext(options)`.                     |
+| `selectAll(options?)`                                      | Select-all does nothing.                                 |
 | `hasSelectionMatchingResult()`                             | Treated as `false`.                                      |
 | `isSelectionEmpty()`                                       | Treated as `true`.                                       |
 | `getSelectedText()`, `getWordUnderCursor()`                | Empty string — so "use selection for find" does nothing. |
@@ -65,6 +65,16 @@ And these are optional, each with a defined fallback:
 | `onDidError(callback)`                                     | Errors are not surfaced.                                 |
 | `deactivate()`                                             | Nothing is torn down when focus leaves your item.        |
 | `refresh()`                                                | Not called.                                              |
+
+Navigation options use the editor's scroll modes:
+
+```ts
+type SearchNavigationOptions = {
+  mode?: "nearest" | "zone" | "center" | number | [number, number];
+};
+```
+
+The panel requests `zone` for explicit result navigation and `nearest` while the user types a live query. An adapter should reveal the current result with that mode; `zone` follows `editor.scrollZone`, and omitted options default to `zone`. Numeric modes specify a viewport percentage or a pair of percentages using the same semantics as the text editor's scrolling API. The options belong to the navigation call and are never stored in `findOptions`.
 
 ## Minimal example
 
@@ -88,8 +98,8 @@ getSearchAdapter() {
     search: (findOptions) => this.runSearch(findOptions.findPattern, findOptions),
     getResultCount: () => this.matches.length,
     getCurrentResultIndex: () => this.currentIndex,
-    selectNext: () => this.step(+1),
-    selectPrevious: () => this.step(-1),
+    selectNext: (options) => this.step(+1, options),
+    selectPrevious: (options) => this.step(-1, options),
     onDidUpdate: (callback) => this.emitter.on("did-update-matches", callback),
     onDidChangeCurrentResult: (callback) => this.emitter.on("did-change-current", callback),
   };
