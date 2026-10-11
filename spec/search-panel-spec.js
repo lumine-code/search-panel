@@ -329,7 +329,7 @@ describe("search-panel integration", () => {
       expect(replaceGrammar.constructor.name).toBe("TreeSitterGrammar");
     });
 
-    it("searches and replaces project files on disk while preserving a dirty buffer", async () => {
+    it("preserves overlapping buffer edits and marks the project replacement as conflicted", async () => {
       const projectDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "search-panel-replace-"));
       const openPath = path.join(projectDirectory, "open.txt");
       const closedPath = path.join(projectDirectory, "closed.txt");
@@ -360,10 +360,72 @@ describe("search-panel integration", () => {
         expect(summary.replacementCount).toBe(4);
         expect(summary.matchCount).toBe(0);
         expect(projectEditor.getText()).toBe(openBufferText);
-        expect(projectEditor.getFileState()).toBe("modified");
+        expect(projectEditor.getFileState()).toBe("conflicted");
         expect(fs.readFileSync(openPath, "utf8")).toBe("xalphax xbetax disk");
         expect(fs.readFileSync(closedPath, "utf8")).toBe("xalphax xbetax disk");
       } finally {
+        projectEditor?.destroy();
+        lumine.project.setPaths([]);
+        fs.rmSync(projectDirectory, { recursive: true, force: true });
+      }
+    });
+
+    it("merges captured project replacements while retaining buffer-only matches and their undo history", async () => {
+      const projectDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "search-panel-replace-"));
+      const openPath = path.join(projectDirectory, "open.txt");
+      const closedPath = path.join(projectDirectory, "closed.txt");
+      const diskText = "header\nalpha beta disk\nfooter\n";
+      const localText = "alpha beta only in buffer\n";
+      const replacedDiskText = "header\nxalphax xbetax disk\nfooter\n";
+      fs.writeFileSync(openPath, diskText);
+      fs.writeFileSync(closedPath, diskText);
+      let projectEditor, replacementSubscription;
+
+      try {
+        lumine.project.setPaths([projectDirectory]);
+        projectEditor = await lumine.workspace.open(openPath);
+        projectEditor.buffer.insert([0, 0], localText);
+        spyOn(projectEditor.buffer, "save").and.callThrough();
+
+        const model = mainModule.resultsModel;
+        await model.search("\\b(alpha|beta)\\b", "", "x$1x", {
+          useRegex: true,
+          caseSensitive: true,
+        });
+
+        expect(model.getPathCount()).toBe(2);
+        expect(model.getMatchCount()).toBe(4);
+        replacementSubscription = model.onDidReplacePath((result) => {
+          if (result.filePath === openPath) {
+            expect(projectEditor.getText()).toBe(localText + replacedDiskText);
+            expect(projectEditor.getFileState()).toBe("modified");
+          }
+        });
+
+        await model.replace("", "x$1x", model.getPaths());
+
+        const summary = model.getResultsSummary();
+        expect(summary.replacedPathCount).toBe(2);
+        expect(summary.replacementCount).toBe(4);
+        expect(summary.matchCount).toBe(0);
+        expect(projectEditor.getText()).toBe(localText + replacedDiskText);
+        expect(projectEditor.getFileState()).toBe("modified");
+        expect(projectEditor.buffer.save).not.toHaveBeenCalled();
+        expect(fs.readFileSync(openPath, "utf8")).toBe(replacedDiskText);
+        expect(fs.readFileSync(closedPath, "utf8")).toBe(replacedDiskText);
+
+        projectEditor.undo();
+
+        expect(projectEditor.getText()).toBe(localText + diskText);
+        expect(projectEditor.getFileState()).toBe("modified");
+        expect(fs.readFileSync(openPath, "utf8")).toBe(replacedDiskText);
+
+        projectEditor.redo();
+
+        expect(projectEditor.getText()).toBe(localText + replacedDiskText);
+        expect(projectEditor.getFileState()).toBe("modified");
+      } finally {
+        replacementSubscription?.dispose();
         projectEditor?.destroy();
         lumine.project.setPaths([]);
         fs.rmSync(projectDirectory, { recursive: true, force: true });
