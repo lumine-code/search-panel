@@ -38,6 +38,7 @@ describe("Find panel selection from embedded editors", () => {
     const element = document.createElement("div");
     element.appendChild(editor.getElement());
     item = {
+      isSingleton: () => true,
       getTitle: () => "Owned embedded search source",
       getElement: () => element,
       getEmbeddedTextEditor: () => editor,
