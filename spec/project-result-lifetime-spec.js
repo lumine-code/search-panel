@@ -3,7 +3,7 @@ const path = require("node:path");
 const os = require("node:os");
 
 describe("Project search result publication boundaries", () => {
-  let main, view, directory, originalPaths, a, b, pending;
+  let main, view, directory, originalPaths, a, b, pending, openedEditors;
   const deferred = () => {
     let resolve;
     const promise = new Promise((done) => (resolve = done));
@@ -26,12 +26,20 @@ describe("Project search result publication boundaries", () => {
     view = main.projectFindView;
     view.model.getFindOptions().set({ useRegex: false });
     pending = [];
+    openedEditors = new Set();
     jasmine.attachToDOM(lumine.views.getView(lumine.workspace));
   });
   afterEach(async () => {
     for (const operation of pending) operation.resolve();
     await Promise.resolve();
     await lumine.packages.deactivatePackage("search-panel");
+    for (const editor of openedEditors) {
+      if (editor.isDestroyed()) continue;
+      const pane = lumine.workspace.paneForItem(editor);
+      if (pane) await pane.destroyItem(editor, true);
+      else editor.destroy();
+      if (!editor.isDestroyed()) throw Error("Fixture editor must close before removing its files");
+    }
     lumine.project.setPaths(originalPaths);
     await lumine.fileWatchClient.settlePendingTeardown();
     const relative = path.relative(fs.realpathSync(os.tmpdir()), fs.realpathSync(directory));
@@ -42,7 +50,12 @@ describe("Project search result publication boundaries", () => {
       relative.startsWith(`..${path.sep}`)
     )
       throw Error("Fixture escaped its owned temporary root");
-    fs.rmSync(directory, { recursive: true, force: true });
+    await fs.promises.rm(directory, {
+      recursive: true,
+      force: true,
+      maxRetries: 5,
+      retryDelay: 50,
+    });
   });
   it("keeps the newer real scan when queued callbacks and completion from the old scan arrive", async () => {
     const scan = lumine.workspace.scan.bind(lumine.workspace);
@@ -140,6 +153,7 @@ describe("Project search result publication boundaries", () => {
     it(`reveals the actual match row through ${method}`, async () => {
       const { results } = await selectedMatch();
       const editor = await lumine.workspace.open(a);
+      openedEditors.add(editor);
       editor.foldBufferRange([
         [0, 0],
         [3, 0],
@@ -153,6 +167,7 @@ describe("Project search result publication boundaries", () => {
   it("does not move selection after a retired result's actual open completes", async () => {
     const { pane, results } = await selectedMatch();
     const target = await lumine.workspace.open(a);
+    openedEditors.add(target);
     target.setSelectedBufferRange([
       [0, 0],
       [0, 0],
