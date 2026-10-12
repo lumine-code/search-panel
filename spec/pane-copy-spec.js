@@ -84,4 +84,27 @@ describe("search result pane copies", () => {
     expect(pinned.destroyed).toBe(true);
     expect(copy.model.destroyed).toBe(false);
   });
+
+  it("preserves the viewport through consecutive copies before the first paint", async () => {
+    const original = new ResultsPane();
+    items.push(original);
+    for (let index = 0; index < 80; index++) add(original.model, `result-${index}.txt`);
+    await lumine.workspace.open(original);
+    const style = document.createElement("style");
+    style.textContent = ".results-view-container { height: 100px !important; max-height: 100px; }";
+    jasmine.attachToDOM(style);
+    await original.refs.resultsView.invalidateItemHeights();
+    original.refs.resultsView.refs.listView.element.scrollTop = 75;
+    expect(original.refs.resultsView.refs.listView.element.scrollTop).toBe(75);
+    const { item: first } = await lumine.workspace.copyPaneItem(original, {
+      splitDirection: "right",
+    });
+    items.push(first);
+    const { item: second } = await lumine.workspace.copyPaneItem(first, { splitDirection: "down" });
+    items.push(second);
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+    expect(first.refs.resultsView.refs.listView.element.scrollTop).toBe(75);
+    expect(second.refs.resultsView.refs.listView.element.scrollTop).toBe(75);
+  });
 });
