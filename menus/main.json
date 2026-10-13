@@ -8,11 +8,15 @@
           "submenu": [
             {
               "label": "Find in Buffer",
-              "command": "search-panel:toggle"
+              "command": "search-panel:toggle",
+              "group": "panels",
+              "order": 10
             },
             {
               "label": "Find in Project",
-              "command": "search-panel:project-toggle"
+              "command": "search-panel:project-toggle",
+              "group": "panels",
+              "order": 10
             }
           ]
         }
