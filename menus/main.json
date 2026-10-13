@@ -6,7 +6,15 @@
       },
       {
         "label": "Search in Folder",
-        "command": "search-panel:project-show-in-current-directory"
+        "command": "search-panel:project-show-in-current-directory",
+        "afterGroupContaining": [
+          "open-external:show",
+          "tree-view:open-selected-entry-up",
+          "native-clip:paste",
+          "tree-view:paste",
+          "tree-view:remove",
+          "tree-view:add-file"
+        ]
       },
       {
         "type": "separator"
