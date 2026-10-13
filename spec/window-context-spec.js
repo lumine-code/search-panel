@@ -33,6 +33,9 @@ describe("document find panels in editor windows", () => {
     expect(first.getSelectedText()).toBe("alpha");
     await lumine.commands.dispatch(second.getElement(), "search-panel:find-next");
     expect(second.getSelectedText()).toBe("beta");
+    const focus = spyOn(extra.getElement(), "focus").and.callThrough();
+    await lumine.commands.dispatch(remote.view.element, "window:focus-next-pane");
+    expect(focus).toHaveBeenCalled();
     await workspace.attachWindow(extra);
     expect(main.windowFinds.has(extra)).toBe(false);
   });
