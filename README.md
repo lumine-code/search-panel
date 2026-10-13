@@ -14,6 +14,8 @@ Fork of [pulsar-edit/pulsar](https://github.com/pulsar-edit/pulsar) (`packages/f
 - **Search adapters**: search custom pane items such as data grids when they expose an adapter.
 - **Scrollbar markers**: shows the search results on the scrollbar and minimap via the marker hub.
 
+![Find occurrences of a symbol in the current file.](.github/demo.png)
+
 ## Installation
 
 To install `search-panel` search for it in the Install pane of the Lumine settings, or run the command `lumine --install lumine-code/search-panel`.

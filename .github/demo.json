@@ -1,0 +1,17 @@
+{
+  "title": "search-panel",
+  "description": "Find occurrences of a symbol in the current file.",
+  "recordedOn": "2026-10-13",
+  "sourceRevision": "87fc39cdea91d291e3d2b70d9e811c396f7e5176",
+  "mode": "normal",
+  "fontSettings": "default",
+  "themeSourceRevision": "6564a9e21899b5541e9c8f8006f9be6d6d72e6ad",
+  "images": [
+    {
+      "file": "demo.png",
+      "label": "Find occurrences of a symbol in the current file.",
+      "width": 1100,
+      "height": 730
+    }
+  ]
+}
