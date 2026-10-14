@@ -119,19 +119,19 @@
               "label": "Selection",
               "submenu": [
                 {
-                  "label": "Select Next",
+                  "label": "Add Next Occurrence",
                   "command": "search-panel:select-next"
                 },
                 {
-                  "label": "Select All",
+                  "label": "Select All Occurrences",
                   "command": "search-panel:select-all"
                 },
                 {
-                  "label": "Undo Selection",
+                  "label": "Undo Last Occurrence",
                   "command": "search-panel:select-undo"
                 },
                 {
-                  "label": "Skip Selection",
+                  "label": "Skip Occurrence",
                   "command": "search-panel:select-skip"
                 }
               ]
