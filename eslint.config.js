@@ -65,6 +65,11 @@ module.exports = [
       "n/no-extraneous-require": "off",
     },
   },
+  {
+    // The demo fixtures are ES module source files.
+    files: ["demo/**/*.js"],
+    languageOptions: { sourceType: "module" },
+  },
   // Must be last: turns off any lint rules that would conflict with Prettier.
   prettier,
 ];
