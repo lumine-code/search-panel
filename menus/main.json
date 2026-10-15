@@ -153,27 +153,7 @@
     }
   ],
   "context-menu": {
-    ".tree-view li.directory:not(.tree-view-special-root)": [
-      {
-        "type": "separator"
-      },
-      {
-        "label": "Search in Folder",
-        "command": "search-panel:project-show-in-current-directory",
-        "afterGroupContaining": [
-          "open-external:show",
-          "tree-view:open-selected-entry-up",
-          "native-clip:paste",
-          "tree-view:paste",
-          "tree-view:remove",
-          "tree-view:add-file"
-        ]
-      },
-      {
-        "type": "separator"
-      }
-    ],
-    ".list-item.match-row": [
+    ".results-view .list-item.match-row": [
       {
         "type": "separator"
       },
@@ -193,7 +173,7 @@
         "type": "separator"
       }
     ],
-    ".list-item.path-row": [
+    ".results-view .list-item.path-row": [
       {
         "type": "separator"
       },
@@ -204,6 +184,28 @@
       {
         "label": "Copy Path",
         "command": "search-panel:copy-path"
+      },
+      {
+        "type": "separator"
+      }
+    ],
+    ".tree-view li.directory:not(.tree-view-special-root) > .list-item": [
+      {
+        "type": "separator"
+      },
+      {
+        "label": "Search in Folder",
+        "command": "search-panel:project-show-in-current-directory",
+        "afterGroupContaining": [
+          "open-external:show",
+          "tree-view:open-selected-entry-up",
+          "native-clip:paste",
+          "tree-view:paste",
+          "tree-view:remove",
+          "tree-view:add-file"
+        ],
+        "group": "opening",
+        "order": 40
       },
       {
         "type": "separator"
