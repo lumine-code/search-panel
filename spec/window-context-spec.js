@@ -39,4 +39,23 @@ describe("document find panels in editor windows", () => {
     await workspace.attachWindow(extra);
     expect(main.windowFinds.has(extra)).toBe(false);
   });
+
+  it("checks the invoking window's current pattern instead of the main find field", async () => {
+    const workspace = lumine.workspace;
+    const first = await workspace.open();
+    const extra = await workspace.openEditorWindow({ show: false });
+    const second = workspace.buildTextEditor();
+    extra.getEditorContainer().getActivePane().activateItem(second, { activatePane: true });
+    await lumine.commands.dispatch(first.getElement(), "search-panel:show");
+    await lumine.commands.dispatch(second.getElement(), "search-panel:show");
+    const main = lumine.packages.getActivePackage("search-panel").mainModule;
+    const remote = main.windowFinds.get(extra);
+    main.findView.findEditor.setText("main");
+    expect(lumine.commands.canDispatch(first.getElement(), "search-panel:find-next")).toBeTrue();
+    expect(lumine.commands.canDispatch(second.getElement(), "search-panel:find-next")).toBeFalse();
+    remote.view.findEditor.setText("other");
+    main.findView.findEditor.setText("");
+    expect(lumine.commands.canDispatch(first.getElement(), "search-panel:find-next")).toBeFalse();
+    expect(lumine.commands.canDispatch(second.getElement(), "search-panel:find-next")).toBeTrue();
+  });
 });

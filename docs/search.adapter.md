@@ -31,16 +31,15 @@ The service is a **factory**, asked which item it handles; the adapter it return
 
 ```ts
 type SearchAdapterService = {
-  getActiveAdapter?(): SearchAdapter | null;
-  handlesItem?(paneItem: object): boolean;
+  handlesItem(paneItem: object): boolean;
   canReplaceItem?(paneItem: object): boolean;
-  getAdapterForItem?(paneItem: object): SearchAdapter | null;
+  getAdapterForItem(paneItem: object): SearchAdapter | null;
 };
 ```
 
-Implement either `getActiveAdapter` — checked first, and useful when your package always knows what is focused — or the `handlesItem` / `getAdapterForItem` pair.
+Both `handlesItem` and `getAdapterForItem` are required. The former declares which items the service can search; the latter creates or returns the adapter for that exact item when a search needs it. A service with missing methods is rejected when consumed.
 
-`handlesItem` and optional `canReplaceItem` are passive capability predicates: return a Boolean synchronously from cached item metadata without creating an adapter, initializing a runtime, reading files, or scanning text. They let command availability work before the first search. A handled item supports replacement before adapter creation only when `canReplaceItem(item)` returns `true`; after creation, the adapter's `canReplace` flag applies.
+`handlesItem` and optional `canReplaceItem` are passive capability predicates: return a strict Boolean synchronously from cached item metadata without creating an adapter, initializing a runtime, reading files, or scanning text. Non-Boolean answers are rejected. They let command availability work before the first search. A handled item supports replacement before adapter creation only when `canReplaceItem(item)` returns `true`; after creation, the adapter's `canReplace` flag applies.
 
 The adapter itself. These are required:
 
@@ -111,7 +110,7 @@ getSearchAdapter() {
 
 ## Behavior
 
-Registered services are consulted **in registration order**, and the first adapter returned wins. `getActiveAdapter()` is tried before `handlesItem`, so a service implementing both effectively overrides its own item test.
+Registered services are consulted **in registration order**. Only services whose `handlesItem(item)` returns `true` are asked for an adapter, and the first adapter returned wins. Availability queries use the same passive matching without calling any adapter factory.
 
 The panel re-resolves the adapter on every active-pane-item change, and registering or unregistering a service re-resolves immediately — so an adapter that becomes available later takes over the currently focused item without the user doing anything.
 

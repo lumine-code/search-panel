@@ -583,21 +583,13 @@ describe("search-panel integration", () => {
       expect(lumine.workspace.getOpeners().length).toBe(activeCount);
     });
 
-    it("runs the first find command and restores cold wrappers after reactivation", async () => {
-      const createFindView = spyOn(mainModule, "createFindView").and.callThrough();
-      const findNext = spyOn(
-        mainModule.findView.constructor.prototype,
-        "findNext",
-      ).and.callThrough();
-      const replaceNext = spyOn(
-        mainModule.findView.constructor.prototype,
-        "replaceNext",
-      ).and.callThrough();
-
+    it("keeps pattern-dependent commands cold and restores selection-derived commands after reactivation", async () => {
       await lumine.packages.deactivatePackage("search-panel");
       await lumine.packages.startPackage("search-panel");
+      mainModule = lumine.packages.getActivePackage("search-panel").mainModule;
+      let createFindView = spyOn(mainModule, "createFindView").and.callThrough();
+      const findNext = spyOn(require("../lib/find-view").prototype, "findNext").and.callThrough();
       expect(lumine.packages.getPackageLifecycleState("search-panel")).toBe("active");
-      createFindView.calls.reset();
 
       const hasCommand = (name) =>
         lumine.commands
@@ -605,6 +597,9 @@ describe("search-panel integration", () => {
           .some(({ name: commandName }) => commandName === name);
 
       await lumine.commands.dispatch(workspaceElement, "search-panel:find-next");
+      expect(createFindView).not.toHaveBeenCalled();
+      expect(lumine.commands.canDispatch(workspaceElement, "search-panel:find-next")).toBeFalse();
+      await lumine.commands.dispatch(workspaceElement, "search-panel:find-next-selected");
       expect(lumine.packages.getPackageLifecycleState("search-panel")).toBe("active");
       expect(hasCommand("search-panel:find-next")).toBe(true);
       expect(mainModule.findView).not.toBeNull();
@@ -614,14 +609,25 @@ describe("search-panel integration", () => {
       await lumine.packages.deactivatePackage("search-panel");
       expect(hasCommand("search-panel:find-next")).toBe(false);
       await lumine.packages.startPackage("search-panel");
+      mainModule = lumine.packages.getActivePackage("search-panel").mainModule;
+      createFindView = spyOn(mainModule, "createFindView").and.callThrough();
       createFindView.calls.reset();
+      editor.setSelectedBufferRange([
+        [0, 0],
+        [0, 3],
+      ]);
 
       await lumine.commands.dispatch(workspaceElement, "search-panel:replace-next");
+      expect(createFindView).not.toHaveBeenCalled();
+      await lumine.commands.dispatch(
+        workspaceElement,
+        "search-panel:use-selection-as-replace-pattern",
+      );
       expect(lumine.packages.getPackageLifecycleState("search-panel")).toBe("active");
       expect(hasCommand("search-panel:replace-next")).toBe(true);
       expect(mainModule.findView).not.toBeNull();
       expect(createFindView).toHaveBeenCalled();
-      expect(replaceNext).toHaveBeenCalledTimes(1);
+      expect(mainModule.findView.replaceEditor.getText()).toBe("one");
     });
   });
 });
