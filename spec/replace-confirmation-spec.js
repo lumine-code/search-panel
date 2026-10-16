@@ -64,6 +64,16 @@ describe("Project replacement confirmation ownership", () => {
     expect(fs.readFileSync(a, "utf8")).toBe("Alpha\n");
     expect(fs.readFileSync(b, "utf8")).toBe("Beta\n");
   });
+
+  it("disables replacement when its cached results no longer match the query", () => {
+    expect(lumine.commands.canDispatch(view.element, "search-panel:project-replace-all")).toBe(
+      true,
+    );
+    view.findEditor.setText("a different query");
+    expect(lumine.commands.canDispatch(view.element, "search-panel:project-replace-all")).toBe(
+      false,
+    );
+  });
   it("still completes a current confirmed replacement through Core filesystem IO", async () => {
     spyOn(lumine.window, "confirm").and.returnValue(Promise.resolve(0));
     await view.replaceAll();

@@ -33,11 +33,14 @@ The service is a **factory**, asked which item it handles; the adapter it return
 type SearchAdapterService = {
   getActiveAdapter?(): SearchAdapter | null;
   handlesItem?(paneItem: object): boolean;
+  canReplaceItem?(paneItem: object): boolean;
   getAdapterForItem?(paneItem: object): SearchAdapter | null;
 };
 ```
 
 Implement either `getActiveAdapter` — checked first, and useful when your package always knows what is focused — or the `handlesItem` / `getAdapterForItem` pair.
+
+`handlesItem` and optional `canReplaceItem` are passive capability predicates: return a Boolean synchronously from cached item metadata without creating an adapter, initializing a runtime, reading files, or scanning text. They let command availability work before the first search. A handled item supports replacement before adapter creation only when `canReplaceItem(item)` returns `true`; after creation, the adapter's `canReplace` flag applies.
 
 The adapter itself. These are required:
 
