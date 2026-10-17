@@ -352,7 +352,6 @@ lumine-workspace.find-visible {
     .path-match-number {
       padding-left: var(--ui-spacing);
       color: inherit;
-      opacity: 0.6;
     }
 
     .preview {
@@ -493,5 +492,14 @@ lumine-workspace.find-visible {
     .syntax--replacement.syntax--variable {
       color: var(--text-color-warning);
     }
+  }
+}
+
+/* Respect reduced motion while retaining visible status indicators. */
+@media (prefers-reduced-motion: reduce) {
+  lumine-text-editor .find-result .region,
+  lumine-text-editor .current-result .region,
+  .find-wrap-icon {
+    transition: none;
   }
 }
