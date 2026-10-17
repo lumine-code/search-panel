@@ -1,3 +1,7 @@
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
+
 describe("search preference storage", () => {
   let main;
 
@@ -62,5 +66,141 @@ describe("search preference storage", () => {
     expect(history.getLast()).toBe("incoming");
     await main.workspaceState.update("findHistory", undefined);
     expect(history.length).toBe(0);
+  });
+
+  it("preserves history navigation when its own search is committed", async () => {
+    main.ensureRuntime();
+    await main.findHistory.add("first");
+    const buffer = new main.runtime.TextBuffer("second");
+    const cycler = new main.runtime.HistoryCycler(buffer, main.findHistory);
+    try {
+      cycler.store();
+      await conditionPromise(() => main.workspaceState.get("findHistory", []).at(-1) === "second");
+
+      cycler.previous();
+
+      expect(buffer.getText()).toBe("first");
+    } finally {
+      cycler.dispose();
+      buffer.destroy();
+    }
+  });
+
+  it("does not replay older option values over later pending edits", async () => {
+    main.ensureRuntime();
+    const changes = [];
+    const subscription = main.findOptions.onDidChange((change) => changes.push(change));
+    try {
+      main.findOptions.set({ useRegex: true });
+      main.findOptions.set({ wholeWord: true });
+      await conditionPromise(() => main.globalState.get("options", {}).wholeWord === true);
+
+      expect(changes.filter((change) => change.useRegex === false)).toEqual([]);
+      expect(changes.filter((change) => change.wholeWord === false)).toEqual([]);
+    } finally {
+      subscription.dispose();
+    }
+  });
+
+  it("updates the existing project fields when stored patterns change", async () => {
+    main.ensureRuntime();
+    main.createProjectFindView();
+    const view = main.projectFindView;
+    view.findEditor.setText("query being edited");
+    view.findEditor.setSelectedBufferRange([
+      [0, 2],
+      [0, 8],
+    ]);
+    const selection = view.findEditor.getSelectedBufferRange();
+    const mutate = spyOn(main.workspaceState, "mutate").and.callThrough();
+    await main.workspaceState.update("patterns", {
+      replacePattern: "restored replacement",
+      pathsPattern: "lib/**",
+    });
+
+    expect(main.projectFindView).toBe(view);
+    expect(view.replaceEditor.getText()).toBe("restored replacement");
+    expect(view.pathsEditor.getText()).toBe("lib/**");
+    expect(view.findEditor.getText()).toBe("query being edited");
+    expect(view.findEditor.getSelectedBufferRange()).toEqual(selection);
+    expect(mutate).not.toHaveBeenCalled();
+  });
+
+  it("captures edits from search fields without waiting for a search or debounce", async () => {
+    main.ensureRuntime();
+    main.createProjectFindView();
+    main.projectFindView.replaceEditor.setText("replacement");
+    main.projectFindView.pathsEditor.setText("src/**");
+    await main.workspaceState.update("findHistory", ["flush pending writes"]);
+
+    expect(main.workspaceState.get("patterns")).toEqual({
+      replacePattern: "replacement",
+      pathsPattern: "src/**",
+    });
+  });
+
+  it("rebinds fields and history while outgoing project writes are still pending", async () => {
+    const originalPaths = lumine.project.getPaths();
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "lumine-search-state-"));
+    const first = path.join(root, "first");
+    const second = path.join(root, "second");
+    fs.mkdirSync(first);
+    fs.mkdirSync(second);
+    try {
+      lumine.project.setPaths([first]);
+      main.ensureRuntime();
+      main.createProjectFindView();
+      const view = main.projectFindView;
+      view.replaceEditor.setText("first replacement");
+      view.pathsEditor.setText("first/**");
+      const outgoing = main.findHistory.add("first search");
+
+      lumine.project.setPaths([second]);
+
+      expect(view.replaceEditor.getText()).toBe("");
+      expect(view.pathsEditor.getText()).toBe("");
+      expect(main.findHistory.items).toEqual([]);
+      view.replaceEditor.setText("second replacement");
+      view.pathsEditor.setText("second/**");
+      const incoming = main.findHistory.add("second search");
+      await outgoing;
+      await incoming;
+      await main.workspaceState.update("flush", true);
+
+      expect(view.replaceEditor.getText()).toBe("second replacement");
+      expect(view.pathsEditor.getText()).toBe("second/**");
+      expect(main.findHistory.items).toEqual(["second search"]);
+      lumine.project.setPaths([first]);
+      expect(view.replaceEditor.getText()).toBe("first replacement");
+      expect(view.pathsEditor.getText()).toBe("first/**");
+      expect(main.findHistory.items).toEqual(["first search"]);
+    } finally {
+      lumine.project.setPaths(originalPaths);
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("keeps the final toggle and history selection through several queued writes", async () => {
+    main.ensureRuntime();
+    const buffer = new main.runtime.TextBuffer("first");
+    const cycler = new main.runtime.HistoryCycler(buffer, main.findHistory);
+    const changes = [];
+    const subscription = main.findOptions.onDidChange((change) => changes.push(change));
+    try {
+      cycler.store();
+      buffer.setText("second");
+      cycler.store();
+      main.findOptions.set({ useRegex: true });
+      main.findOptions.set({ useRegex: false });
+      await main.workspaceState.update("flush", true);
+
+      cycler.previous();
+      expect(buffer.getText()).toBe("first");
+      expect(changes).toEqual([{ useRegex: true }, { useRegex: false }]);
+    } finally {
+      subscription.dispose();
+      cycler.dispose();
+      buffer.destroy();
+    }
   });
 });
