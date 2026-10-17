@@ -2,6 +2,23 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 
+async function removeTemporaryDirectory(directory) {
+  const relative = path.relative(fs.realpathSync(os.tmpdir()), fs.realpathSync(directory));
+  if (
+    !relative ||
+    path.isAbsolute(relative) ||
+    relative === ".." ||
+    relative.startsWith(`..${path.sep}`)
+  )
+    throw Error("Fixture escaped its owned temporary root");
+  await fs.promises.rm(directory, {
+    recursive: true,
+    force: true,
+    maxRetries: 5,
+    retryDelay: 50,
+  });
+}
+
 describe("search preference storage", () => {
   let main;
 
@@ -176,7 +193,8 @@ describe("search preference storage", () => {
       expect(main.findHistory.items).toEqual(["first search"]);
     } finally {
       lumine.project.setPaths(originalPaths);
-      fs.rmSync(root, { recursive: true, force: true });
+      await lumine.fileWatchClient.settlePendingTeardown();
+      await removeTemporaryDirectory(root);
     }
   });
 
