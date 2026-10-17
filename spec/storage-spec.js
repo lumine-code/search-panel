@@ -203,4 +203,20 @@ describe("search preference storage", () => {
       buffer.destroy();
     }
   });
+
+  it("refreshes existing buffer matches when another window changes a search option", async () => {
+    await lumine.packages.activatePackage("language-regex");
+    const editor = await lumine.workspace.open();
+    editor.setText("oneX two");
+    main.ensureRuntime();
+    main.createFindView();
+    main.findView.findEditor.setText("one.");
+    main.findView.search();
+    expect(main.activeTarget.getResultCount()).toBe(0);
+
+    await main.globalState.update("options", { useRegex: true });
+
+    expect(main.findOptions.useRegex).toBe(true);
+    expect(main.activeTarget.getResultCount()).toBe(1);
+  });
 });
