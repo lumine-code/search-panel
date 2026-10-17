@@ -219,4 +219,76 @@ describe("search preference storage", () => {
     expect(main.findOptions.useRegex).toBe(true);
     expect(main.activeTarget.getResultCount()).toBe(1);
   });
+
+  it("cancels the outgoing project scan and ignores its late results", async () => {
+    main.ensureRuntime();
+    const originalPaths = lumine.project.getPaths();
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "lumine-search-scan-"));
+    let report;
+    let finish;
+    const scan = new Promise((resolve) => (finish = resolve));
+    scan.cancel = jasmine.createSpy("cancel scan");
+    const scans = spyOn(lumine.workspace, "scan").and.callFake((_regex, _options, callback) => {
+      report = callback;
+      return scan;
+    });
+    try {
+      const search = main.resultsModel.search("needle", "", "");
+      lumine.project.setPaths([root]);
+      report({
+        filePath: path.join(root, "outgoing-result.txt"),
+        matches: [
+          {
+            matchText: "needle",
+            lineText: "needle",
+            range: [
+              [0, 0],
+              [0, 6],
+            ],
+          },
+        ],
+      });
+      finish();
+      await search;
+
+      expect(scan.cancel).toHaveBeenCalled();
+      expect(main.resultsModel.getPathCount()).toBe(0);
+      await main.resultsModel.search("needle", "", "", { onlyRunIfChanged: true });
+      expect(scans).toHaveBeenCalledTimes(2);
+    } finally {
+      finish();
+      lumine.project.setPaths(originalPaths);
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("does not start a search in the next project when an outgoing replacement finishes", async () => {
+    main.ensureRuntime();
+    const originalPaths = lumine.project.getPaths();
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "lumine-search-replace-"));
+    const scan = Object.assign(Promise.resolve(), { cancel() {} });
+    const scans = spyOn(lumine.workspace, "scan").and.returnValue(scan);
+    let report;
+    let finish;
+    const replacement = new Promise((resolve) => (finish = resolve));
+    spyOn(lumine.workspace, "replace").and.callFake((_regex, _text, _paths, callback) => {
+      report = callback;
+      return replacement;
+    });
+    try {
+      await main.resultsModel.search("needle", "", "replacement");
+      const operation = main.resultsModel.replace("", "replacement", []);
+      lumine.project.setPaths([root]);
+      report({ replacements: 2 });
+      finish();
+      await operation;
+
+      expect(scans).toHaveBeenCalledTimes(1);
+      expect(main.resultsModel.replacementCount).toBeNull();
+    } finally {
+      finish();
+      lumine.project.setPaths(originalPaths);
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
 });
