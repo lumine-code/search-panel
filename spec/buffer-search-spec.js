@@ -21,6 +21,31 @@ describe("BufferSearch", () => {
 
   afterEach(() => model.destroy());
 
+  it("replaces many matches on the same row in one layout update and one undo", () => {
+    const source = "one gap ".repeat(100);
+    editor.setText(source);
+    editor.getBuffer().clearUndoStack();
+    model.search("one");
+    const layout = spyOn(editor.getBuffer(), "updateDisplayLayersForChange").and.callThrough();
+    model.replace(model.markers.slice(), "replacement");
+    expect(editor.getText()).toBe("replacement gap ".repeat(100));
+    expect(model.markers.length).toBe(0);
+    expect(layout.calls.count()).toBe(1);
+    editor.undo();
+    expect(editor.getText()).toBe(source);
+    editor.redo();
+    expect(editor.getText()).toBe("replacement gap ".repeat(100));
+  });
+
+  it("keeps read-only text and result markers when replacement is refused", () => {
+    editor.setText("one ".repeat(100));
+    model.search("one");
+    editor.setReadOnly(true);
+    model.replace(model.markers.slice(), "other");
+    expect(editor.getText()).toBe("one ".repeat(100));
+    expect(model.markers.length).toBe(100);
+  });
+
   it("marks every occurrence of the pattern and emits did-update", () => {
     model.search("one");
     // "one" (case-insensitive default): line0 col0, line0 col8 (One),
