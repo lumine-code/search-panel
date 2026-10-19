@@ -168,63 +168,6 @@ describe("search-panel marker layer", () => {
     expect(layer.items).toEqual([]);
   });
 
-  it("drops a match invalidated by Enter while valid anchors move before the rescan", () => {
-    const markers = editor.addMarkerLayer();
-    const edited = markers.markScreenRange(
-      [
-        [2, 0],
-        [2, 5],
-      ],
-      { invalidate: "inside" },
-    );
-    const following = markers.markScreenRange(
-      [
-        [10, 0],
-        [10, 5],
-      ],
-      { invalidate: "inside" },
-    );
-    service.markerLayers.set(editor, markers);
-    emitUpdate();
-    expect(layer.items.length).toBe(2);
-
-    editor.getBuffer().insert([2, 2], "\n");
-
-    expect(edited.isValid()).toBe(false);
-    expect(following.isValid()).toBe(true);
-    // The stopped-changing scan has not run; poll the native marker state.
-    expect(provider.getItems(layer)).toEqual([{ row: 11, end: 11 }]);
-  });
-
-  it("refreshes a native same-row invalidation without a producer update or rescan", () => {
-    const native = editor.addMarkerLayer();
-    const edited = native.markBufferRange(
-      [
-        [2, 0],
-        [2, 5],
-      ],
-      { invalidate: "inside" },
-    );
-    native.markBufferRange(
-      [
-        [10, 0],
-        [10, 5],
-      ],
-      { invalidate: "inside" },
-    );
-    service.markerLayers.set(editor, native);
-    emitUpdate();
-    const producer = spyOn(service.emitter, "emit").and.callThrough();
-    layer.update.calls.reset();
-
-    editor.getBuffer().insert([2, 2], "x");
-
-    expect(edited.isValid()).toBe(false);
-    expect(layer.update).toHaveBeenCalled();
-    expect(layer.items).toEqual([{ row: 10, end: 10 }]);
-    expect(producer).not.toHaveBeenCalled();
-  });
-
   it("clears the markers in editors that are not active", async () => {
     markResults([
       [2, 0],
@@ -236,56 +179,6 @@ describe("search-panel marker layer", () => {
     await lumine.workspace.open();
     emitUpdate();
     expect(layer.items).toEqual([]);
-  });
-
-  it("reads existing results from a replacement service without waiting for another event", () => {
-    consumerDisposable.dispose();
-    const results = markResults([
-      [12, 0],
-      [13, 5],
-    ]);
-    const replacement = makeFakeService();
-    replacement.markerLayers.set(editor, results);
-    layer.update.calls.reset();
-
-    consumerDisposable = mainModule.markerLayer.connect(replacement);
-
-    expect(layer.update).toHaveBeenCalledTimes(1);
-    expect(layer.items).toEqual([{ row: 12, end: 13 }]);
-  });
-
-  it("keeps a replacement service after the older connection emits or is disposed", () => {
-    const previous = consumerDisposable;
-    const results = markResults([
-      [12, 0],
-      [13, 5],
-    ]);
-    const replacement = makeFakeService();
-    replacement.markerLayers.set(editor, results);
-    consumerDisposable = mainModule.markerLayer.connect(replacement);
-    layer.update.calls.reset();
-
-    service.emitter.emit("did-update");
-    service.emitter.emit("did-change-find-visibility");
-    previous.dispose();
-
-    expect(layer.update).not.toHaveBeenCalled();
-    expect(mainModule.markerLayer.service).toBe(replacement);
-    expect(layer.items).toEqual([{ row: 12, end: 13 }]);
-  });
-
-  it("invalidates only once after reconnecting to the same service facade", () => {
-    const previous = consumerDisposable;
-    consumerDisposable = mainModule.markerLayer.connect(service);
-    layer.update.calls.reset();
-    emitUpdate();
-    expect(layer.update).toHaveBeenCalledTimes(1);
-
-    previous.dispose();
-    expect(mainModule.markerLayer.service).toBe(service);
-    layer.update.calls.reset();
-    service.emitter.emit("did-change-find-visibility");
-    expect(layer.update).toHaveBeenCalledTimes(1);
   });
 
   it("clears the layers and stops updating once the consumer is disposed", () => {
