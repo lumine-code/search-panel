@@ -43,7 +43,7 @@ describe("Search project transitions", () => {
       !path.basename(root).startsWith("lumine-search-transition-")
     )
       throw new Error("Search transition scratch escaped its temporary root");
-    fs.rmSync(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 });
+    await fs.promises.rm(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 });
     release = null;
   });
   it("applies incoming patterns before paths change without starting a project scan", async () => {
