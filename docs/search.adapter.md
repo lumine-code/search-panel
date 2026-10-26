@@ -4,7 +4,7 @@ Makes a pane item that is not a `TextEditor` searchable with the ordinary find p
 
 |             |                                                          |
 | ----------- | -------------------------------------------------------- |
-| Version     | `1.0.0`                                                  |
+| Version     | `2.0.0`                                                  |
 | Provided by | `provideSearchAdapter()` returning an adapter factory    |
 | Consumed by | `consumeSearchAdapter(service)` returning a `Disposable` |
 | Owner       | `search-panel` (bundled)                                 |
@@ -19,7 +19,7 @@ In your `package.json`:
 {
   "providedServices": {
     "search.adapter": {
-      "versions": { "1.0.0": "provideSearchAdapter" }
+      "versions": { "2.0.0": "provideSearchAdapter" }
     }
   }
 }
@@ -54,19 +54,24 @@ The adapter itself. These are required:
 
 And these are optional, each with a defined fallback:
 
-| Member                                                     | Fallback when absent                                     |
-| ---------------------------------------------------------- | -------------------------------------------------------- |
-| `canReplace`                                               | Replace is disabled.                                     |
-| `replaceCurrentMatch(text, direction)`, `replaceAll(text)` | Only called when `canReplace` is truthy.                 |
-| `selectFirstFromCursor(options?)`                          | Falls back to `selectNext(options)`.                     |
-| `selectAll(options?)`                                      | Select-all does nothing.                                 |
-| `hasSelectionMatchingResult()`                             | Treated as `false`.                                      |
-| `isSelectionEmpty()`                                       | Treated as `true`.                                       |
-| `getSelectedText()`, `getWordUnderCursor()`                | Empty string — so "use selection for find" does nothing. |
-| `getWrapIconHost()`                                        | No wrap indicator is shown.                              |
-| `onDidError(callback)`                                     | Errors are not surfaced.                                 |
-| `deactivate()`                                             | Nothing is torn down when focus leaves your item.        |
-| `refresh()`                                                | Not called.                                              |
+| Member                                                     | Fallback when absent                                             |
+| ---------------------------------------------------------- | ---------------------------------------------------------------- |
+| `canReplace`                                               | Replace is disabled.                                             |
+| `replaceCurrentMatch(text, direction)`, `replaceAll(text)` | Only called when `canReplace` is truthy.                         |
+| `selectFirstFromCursor(options?)`                          | Falls back to `selectNext(options)`.                             |
+| `selectAll(options?)`                                      | Select-all does nothing.                                         |
+| `hasSelectionMatchingResult()`                             | Treated as `false`.                                              |
+| `isSelectionEmpty()`                                       | Treated as `true`.                                               |
+| `getSelectedText()`, `getWordUnderCursor()`                | Empty string — so "use selection for find" does nothing.         |
+| `getWrapIconHost()`                                        | No wrap indicator is shown.                                      |
+| `onDidError(callback)`                                     | Rejected operation errors are still reported.                    |
+| `deactivate()`                                             | Nothing is torn down when focus leaves your item.                |
+| `isPending()`                                              | Treated as `false`; while true, getResultCount is a lower bound. |
+| `refresh()`                                                | Not called.                                                      |
+
+Search, navigation and replacement may return promises. The panel awaits navigation and replacement and reports rejected operations through its error channel. Providers should cancel obsolete work when the query, source revision or target changes. `getResultCount()` returns an exact total when `isPending()` is false, or the current lower bound while true; `getCurrentResultIndex()` returns -1 when an exact ordinal is not yet known. Counts must not depend on retaining an array or marker for every occurrence. `onDidUpdate` signals fresh state; its payload is not an exhaustive match list.
+
+Adapters that expose an embedded text editor should also forward `getBuffer()`, `getSelectedBufferRange()` and `getCursorBufferPosition()`. The panel uses those optional metadata methods to check search-field seed budgets before requesting selected text or a word; these limits affect field prefilling, never the range searched.
 
 Navigation options use the editor's scroll modes:
 
@@ -124,4 +129,4 @@ When an adapter is active the panel detaches from any text editor entirely, so y
 
 ## Versioning
 
-`1.0.0` provided, `^1.0.0` consumed. A change that breaks this shape gets a new service name rather than a new major version, and both sides move in the same release.
+`2.0.0` provided, `^2.0.0` consumed. Providers and consumers move together when a major contract changes. Version 2 allows asynchronous search, navigation and replacement, and counts independent of retained presentation matches.

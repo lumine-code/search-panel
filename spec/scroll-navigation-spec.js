@@ -75,4 +75,36 @@ describe("buffer result navigation scrolling", () => {
     expect(editor.getSelectedBufferRanges().length).toBe(2);
     expect(scrollRequests.at(-1).options.mode).toEqual([15, 65]);
   });
+  it("supports asynchronous adapters and counts beyond array-length limits", async () => {
+    let update;
+    const failure = new Error("replacement failed");
+    const adapterTarget = new AdapterSearchTarget(
+      {
+        canReplace: true,
+        getResultCount: () => 2 ** 33,
+        isPending: () => true,
+        onDidUpdate(callback) {
+          update = callback;
+          return { dispose() {} };
+        },
+        selectNext: async () => ({ found: true, wrapped: null }),
+        replaceAll: () => Promise.reject(failure),
+      },
+      new FindOptions(),
+    );
+    let seen;
+    adapterTarget.onDidUpdate((count) => {
+      seen = count;
+    });
+    update();
+    expect(seen).toBe(2 ** 33);
+    expect(adapterTarget.isPending()).toBe(true);
+    expect(await adapterTarget.selectNext()).toEqual({ found: true, wrapped: null });
+    let reported;
+    adapterTarget.onDidError((error) => {
+      reported = error;
+    });
+    await expectAsync(adapterTarget.replaceAll("x")).toBeRejectedWith(failure);
+    expect(reported).toBe(failure);
+  });
 });

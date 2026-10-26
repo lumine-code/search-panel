@@ -180,7 +180,7 @@
     },
     "search.adapter": {
       "versions": {
-        "^1.0.0": "consumeSearchAdapter"
+        "^2.0.0": "consumeSearchAdapter"
       }
     }
   },
