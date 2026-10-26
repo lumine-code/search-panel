@@ -75,13 +75,20 @@ describe("search-panel select-next commands", () => {
     editor.setText("x".repeat(65537));
     editor.selectAll();
     const selected = editor.getSelectedBufferRange();
+    const getSelectedText = editor.getSelectedText;
     const read = spyOn(editor, "getSelectedText").and.throwError("Unexpected selection read");
     spyOn(lumine.notifications, "addWarning");
-    dispatch("search-panel:select-next");
-    dispatch("search-panel:select-all");
-    expect(read).not.toHaveBeenCalled();
-    expect(editor.getSelectedBufferRange()).toEqual(selected);
-    expect(lumine.notifications.addWarning).toHaveBeenCalled();
+    try {
+      dispatch("search-panel:select-next");
+      dispatch("search-panel:select-all");
+      expect(read).not.toHaveBeenCalled();
+      expect(editor.getSelectedBufferRange()).toEqual(selected);
+      expect(lumine.notifications.addWarning).toHaveBeenCalled();
+    } finally {
+      // Linux PRIMARY may read this modest selection during deferred editor
+      // cleanup. Only the synchronous occurrence-query path is under test.
+      editor.getSelectedText = getSelectedText;
+    }
   });
 
   it("rejects empty-selection word lookup before scanning a giant row", () => {
