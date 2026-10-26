@@ -16,6 +16,8 @@ Fork of [pulsar-edit/pulsar](https://github.com/pulsar-edit/pulsar) (`packages/f
 
 ![Find occurrences of a symbol in the current file.](.github/demo.png)
 
+Only In Selection keeps the chosen ranges while navigating, copying results, replacing and undoing edits. Choosing a different nonempty selection updates the scope on the next search. Turning the option off or switching documents releases that scope.
+
 ## Installation
 
 To install `search-panel` search for it in the Install pane of the Lumine settings, or run the command `lumine --install lumine-code/search-panel`.
