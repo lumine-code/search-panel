@@ -158,7 +158,7 @@
     "search.control": {
       "description": "Search panel service with find options, panel controls, and search triggers",
       "versions": {
-        "1.0.0": "provideSearchControl"
+        "2.0.0": "provideSearchControl"
       }
     },
     "marker.layer": {

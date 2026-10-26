@@ -4,7 +4,7 @@ Drives the find and replace panels from another package: read the options, show 
 
 |             |                                                       |
 | ----------- | ----------------------------------------------------- |
-| Version     | `1.0.0`                                               |
+| Version     | `2.0.0`                                               |
 | Provided by | `provideSearchControl()` returning the control object |
 | Consumed by | `consumeSearchControl(search)`                        |
 | Owner       | `search-panel` (bundled)                              |
@@ -19,7 +19,7 @@ In your `package.json`:
 {
   "consumedServices": {
     "search.control": {
-      "versions": { "^1.0.0": "consumeSearchControl" }
+      "versions": { "^2.0.0": "consumeSearchControl" }
     }
   }
 }
@@ -31,6 +31,13 @@ In your `package.json`:
 type SearchControl = {
   // Results
   resultsMarkerLayerForTextEditor(editor: TextEditor): DisplayMarkerLayer;
+  getSearchState(): {
+    count: number;
+    pending: boolean;
+    complete: boolean;
+    markerCount: number;
+    error: Error | null;
+  };
   onDidUpdate(callback: (markers: DisplayMarker[]) => void): Disposable;
   onDidChangeCurrentResult(callback: (result: object) => void): Disposable;
 
@@ -50,7 +57,7 @@ type SearchControl = {
   onDidChangeProjectFindVisibility(callback: (visible: boolean) => void): Disposable;
 
   // Triggers
-  search(findPattern: string, options?: object): void;
+  search(findPattern: string, options?: object): Promise<void>;
   projectSearch(findPattern: string, pathsPattern?: string): void;
 };
 ```
@@ -83,7 +90,7 @@ module.exports = {
 
 `resultsMarkerLayerForTextEditor` returns the layer for that editor whether or not a search is running; it is simply empty when there are no matches. The markers are live, so read positions when you need them.
 
-`onDidUpdate` fires on every result-set change, including one that clears the results.
+`onDidUpdate` fires when counts or presented markers change, including when results are cleared. Large-buffer searches count all matches asynchronously but keep at most 2,000 viewport markers plus the current match. Marker count is therefore not the total result count. Read `getSearchState()` for the total discovered so far and its `complete` flag; `pending` remains true until counting finishes. `search()` resolves when that query finishes or is superseded; errors are shown by the panel and available in the returned state accessor.
 
 Project discovery options use backend polarity: `useCoreIgnoredNames` applies both `core.ignoredNames` and the additional `search-panel.ignoredNames`, while `excludeVcsIgnoredPaths` applies repository ignore rules. The panel presents their inverses as independent Include Ignored Names and Include VCS-Ignored Paths buttons for the current search; changing either button does not write configuration.
 
@@ -93,4 +100,4 @@ Every `on*` member returns a `Disposable`; collect them and dispose on teardown.
 
 ## Versioning
 
-`1.0.0` provided, `^1.0.0` consumed. A change that breaks this shape gets a new service name rather than a new major version, and both sides move in the same release.
+`2.0.0` provided, `^2.0.0` consumed. Version 2 separates complete match counts from bounded viewport markers and adds asynchronous search completion. Version 1's promise of one marker per match is no longer provided. Consumers must request `^2.0.0` and use `getSearchState()` for counts.

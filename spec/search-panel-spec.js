@@ -21,6 +21,7 @@ describe("search-panel integration", () => {
     const activationPromise = lumine.packages.activatePackage("search-panel");
     lumine.commands.dispatch(workspaceElement, "search-panel:show");
     const pkg = await activationPromise;
+    expect(fs.realpathSync(pkg.path)).toBe(fs.realpathSync(path.resolve(__dirname, "..")));
     mainModule = pkg.mainModule;
   });
 
@@ -74,6 +75,13 @@ describe("search-panel integration", () => {
     it("exposes the search-panel service", () => {
       const service = mainModule.provideSearchControl();
       expect(typeof service.search).toBe("function");
+      expect(typeof service.getSearchState).toBe("function");
+      let provided;
+      const lease = lumine.packages.serviceHub.consume("search.control", "^2.0.0", (value) => {
+        provided = value;
+      });
+      expect(typeof provided?.getSearchState).toBe("function");
+      lease.dispose();
       expect(typeof service.projectSearch).toBe("function");
       expect(typeof service.showFind).toBe("function");
       expect(typeof service.resultsMarkerLayerForTextEditor).toBe("function");
@@ -98,7 +106,7 @@ describe("search-panel integration", () => {
 
     it("reattaches a detached results pane to the shared model and its events", async () => {
       mainModule.createProjectFindView();
-      const ResultsPaneView = require("../lib/results-pane");
+      const { ResultsPaneView } = mainModule.ensureRuntime();
       const pane = new ResultsPaneView();
 
       await pane.dontOverrideTab();
@@ -588,7 +596,10 @@ describe("search-panel integration", () => {
       await lumine.packages.startPackage("search-panel");
       mainModule = lumine.packages.getActivePackage("search-panel").mainModule;
       let createFindView = spyOn(mainModule, "createFindView").and.callThrough();
-      const findNext = spyOn(require("../lib/find-view").prototype, "findNext").and.callThrough();
+      const findNext = spyOn(
+        mainModule.ensureRuntime().FindView.prototype,
+        "findNext",
+      ).and.callThrough();
       expect(lumine.packages.getPackageLifecycleState("search-panel")).toBe("active");
 
       const hasCommand = (name) =>
