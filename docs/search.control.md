@@ -92,6 +92,8 @@ module.exports = {
 
 `onDidUpdate` fires when counts or presented markers change, including when results are cleared. Large-buffer searches count all matches asynchronously but keep at most 2,000 viewport markers plus the current match. Marker count is therefore not the total result count. Read `getSearchState()` for the total discovered so far and its `complete` flag; `pending` remains true until counting finishes. `search()` resolves when that query finishes or is superseded; errors are shown by the panel and available in the returned state accessor.
 
+Selection-derived field seeds are limited to 65,536 UTF-16 units. Opening Find or Replace skips multiline or oversized editor selections before reading their text and retains the existing field. Explicit selection-seeding commands report oversized input without truncating it, substituting a word, or running the previous query. Automatic word lookup on a row beyond that budget also reports a limit; selecting a shorter exact fragment still works. Searching within a selected range has no corresponding range-size limit. Select All Occurrences follows the same explicit 2,000-selection limit as the find panel and leaves existing selections unchanged when exceeded.
+
 Project discovery options use backend polarity: `useCoreIgnoredNames` applies both `core.ignoredNames` and the additional `search-panel.ignoredNames`, while `excludeVcsIgnoredPaths` applies repository ignore rules. The panel presents their inverses as independent Include Ignored Names and Include VCS-Ignored Paths buttons for the current search; changing either button does not write configuration.
 
 ## Teardown

@@ -70,4 +70,68 @@ describe("search-panel select-next commands", () => {
     dispatch("search-panel:select-undo");
     expect(editor.getSelections().length).toBe(1);
   });
+
+  it("rejects an oversized occurrence query before reading the selected text", () => {
+    editor.setText("x".repeat(65537));
+    editor.selectAll();
+    const selected = editor.getSelectedBufferRange();
+    const read = spyOn(editor, "getSelectedText").and.throwError("Unexpected selection read");
+    spyOn(lumine.notifications, "addWarning");
+    dispatch("search-panel:select-next");
+    dispatch("search-panel:select-all");
+    expect(read).not.toHaveBeenCalled();
+    expect(editor.getSelectedBufferRange()).toEqual(selected);
+    expect(lumine.notifications.addWarning).toHaveBeenCalled();
+  });
+
+  it("rejects empty-selection word lookup before scanning a giant row", () => {
+    editor.setText("x".repeat(65537));
+    editor.setCursorBufferPosition([0, 100]);
+    const word = spyOn(editor.getLastCursor(), "getCurrentWordBufferRange").and.throwError(
+      "Unexpected whole-line scan",
+    );
+    spyOn(lumine.notifications, "addWarning");
+    dispatch("search-panel:select-next");
+    expect(word).not.toHaveBeenCalled();
+    expect(editor.getSelectedBufferRange().isEmpty()).toBe(true);
+    expect(lumine.notifications.addWarning).toHaveBeenCalled();
+  });
+
+  it("reports excessive occurrence selections without silently selecting a prefix", () => {
+    editor.setText("one ".repeat(2500));
+    editor.setSelectedBufferRange([
+      [0, 0],
+      [0, 3],
+    ]);
+    spyOn(lumine.notifications, "addWarning");
+    dispatch("search-panel:select-all");
+    expect(editor.getSelections().length).toBe(1);
+    expect(editor.getSelectedText()).toBe("one");
+    expect(lumine.notifications.addWarning).toHaveBeenCalled();
+  });
+
+  it("preserves whole-word boundaries while scanning the literal occurrence", () => {
+    editor.setText("foo foobar\nfoo\tfoo");
+    editor.setCursorBufferPosition([0, 1]);
+    dispatch("search-panel:select-next");
+    const model = lumine.packages
+      .getActivePackage("search-panel")
+      .mainModule.selectNextObjects.get(editor);
+    expect(model.wordSelected).toBe(true);
+    dispatch("search-panel:select-all");
+    expect(editor.getSelectedBufferRanges()).toEqual([
+      [
+        [0, 0],
+        [0, 3],
+      ],
+      [
+        [1, 0],
+        [1, 3],
+      ],
+      [
+        [1, 4],
+        [1, 7],
+      ],
+    ]);
+  });
 });
