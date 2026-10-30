@@ -14,9 +14,10 @@ Fork of [pulsar-edit/pulsar](https://github.com/pulsar-edit/pulsar) (`packages/f
 - **Search adapters**: search custom pane items such as data grids when they expose an adapter.
 - **Scrollbar markers**: shows the search results on the scrollbar and minimap via the marker hub.
 
-![Find occurrences of a symbol in the current file.](.github/demo.png)
 
 Only In Selection keeps the chosen ranges while navigating, copying results, replacing and undoing edits. Choosing a different nonempty selection updates the scope on the next search. Turning the option off or switching documents releases that scope.
+
+![Find occurrences of a symbol in the current file.](.github/demo.png)
 
 ## Installation
 
