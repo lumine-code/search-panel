@@ -261,9 +261,49 @@ describe("BufferSearch", () => {
     });
 
     it("replaces every match outside the marker cap and preserves one undo operation", async () => {
+      const buffer = editor.getBuffer();
+      const tracked = [];
+      const layer = buffer.addMarkerLayer({
+        destroyInvalidatedMarkers: true,
+        trackRanges(entries) {
+          tracked.push(buffer.getTextSnapshot().slice(0, 20));
+          return entries.map(({ id }) => ({ id, range: null }));
+        },
+      });
+      layer.markRange(
+        [
+          [0, 0],
+          [0, 3],
+        ],
+        { invalidate: "never" },
+      );
       await model.search("one", { caseSensitive: true });
       await model.replaceAllMatches("found");
       expect(editor.getText()).toBe("found two\n".repeat(20000));
+      expect(tracked[0]).toBe("found two\none two\non");
+      expect(model.getResultCount()).toBe(0);
+      expect(model.pending).toBe(false);
+      editor.undo();
+      expect(editor.getText()).toBe("one two\n".repeat(20000));
+    });
+
+    it("reports committed listener failures and refreshes results for the changed source", async () => {
+      await model.search("one", { caseSensitive: true });
+      const errors = jasmine.createSpy("replacement errors");
+      model.onDidError(errors);
+      const lease = editor.getBuffer().onDidChangeText(() => {
+        throw new Error("replacement listener failed");
+      });
+      try {
+        await model.replaceAllMatches("found");
+      } finally {
+        lease.dispose();
+      }
+      expect(editor.getText()).toBe("found two\n".repeat(20000));
+      expect(errors).toHaveBeenCalled();
+      expect(errors.calls.mostRecent().args[0].committed).toBe(true);
+      expect(model.getResultCount()).toBe(0);
+      expect(model.pending).toBe(false);
       editor.undo();
       expect(editor.getText()).toBe("one two\n".repeat(20000));
     });
