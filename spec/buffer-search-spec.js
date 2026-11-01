@@ -307,5 +307,53 @@ describe("BufferSearch", () => {
       editor.undo();
       expect(editor.getText()).toBe("one two\n".repeat(20000));
     });
+
+    for (const change of ["query", "editor"]) {
+      it(`drops a committed listener error when the ${change} changes during result refresh`, async () => {
+        await model.search("one", { caseSensitive: true });
+        const errors = jasmine.createSpy("replacement errors");
+        model.onDidError(errors);
+        const lease = editor.getBuffer().onDidChangeText(() => {
+          throw new Error("replacement listener failed");
+        });
+        let started,
+          release,
+          held = true;
+        const refreshing = new Promise((resolve) => (started = resolve));
+        const gate = new Promise((resolve) => (release = resolve));
+        const recreate = model.recreateMarkers;
+        spyOn(model, "recreateMarkers").and.callFake(function (...args) {
+          const result = recreate.apply(this, args);
+          if (!held) return result;
+          held = false;
+          started();
+          return result.then(() => gate);
+        });
+        let other;
+        const replacing = model.replaceAllMatches("found");
+        try {
+          await refreshing;
+          if (change === "query") await model.search("two");
+          else {
+            other = lumine.workspace.buildTextEditor();
+            other.setText("one unrelated");
+            model.setEditor(other);
+          }
+          release();
+          await replacing;
+          expect(errors).not.toHaveBeenCalled();
+          expect(model.error).toBeNull();
+          expect(model.getResultCount()).toBe(change === "query" ? 20000 : 1);
+          expect(model.pending).toBe(false);
+        } finally {
+          release();
+          lease.dispose();
+          if (other) {
+            model.setEditor(editor);
+            other.destroy();
+          }
+        }
+      });
+    }
   });
 });
