@@ -1,5 +1,6 @@
 const etch = require("@lumine-code/etch");
 const ListView = require("../lib/list-view");
+const ResultsView = require("../lib/results-view");
 const $ = etch.dom;
 
 class ItemView {
@@ -26,7 +27,7 @@ describe("ListView", () => {
   let listView;
 
   afterEach(async () => {
-    if (listView) await etch.destroy(listView);
+    if (listView) await listView.destroy();
   });
 
   it("uses cached offsets to render only the visible rows while scrolling", async () => {
@@ -83,5 +84,32 @@ describe("ListView", () => {
 
     expect(heightForItem.calls.count()).toBe(2);
     expect(listView.refs.list.style.height).toBe("50px");
+  });
+
+  it("reveals a bottom result above the horizontal overlay without changing row offsets", () => {
+    listView = new ListView({
+      items: [{ name: "last", height: 100 }],
+      heightForItem: (item) => item.height,
+      itemComponent: ItemView,
+      className: "items",
+    });
+    listView.scrollbarGeometry = { viewportHeight: 100, scrollEndInset: 10 };
+    const view = Object.create(ResultsView.prototype);
+    Object.assign(view, {
+      refs: { listView },
+      selectedRowIndex: 0,
+      positionOfSelectedResult: () => 80,
+      getRowHeight: () => 20,
+      selectedRow: () => ({}),
+      getScrollTop: () => 0,
+      setScrollTop: jasmine.createSpy("setScrollTop"),
+    });
+    view.scrollToSelectedMatch();
+    expect(view.setScrollTop).toHaveBeenCalledWith(10);
+    expect(listView.refs.list.style.height).toBe("100px");
+    listView.scrollbarGeometry = { viewportHeight: 100, scrollEndInset: 0 };
+    view.setScrollTop.calls.reset();
+    view.scrollToSelectedMatch();
+    expect(view.setScrollTop).not.toHaveBeenCalled();
   });
 });

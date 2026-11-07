@@ -401,13 +401,6 @@ lumine-workspace.find-visible {
       }
     }
   }
-
-  .results-view-container {
-    /* adds some padding
-       so the last item can be clicked
-       when there is a horizontal scrollbar -> #943 */
-    padding-bottom: var(--ui-spacing);
-  }
 }
 
 /* Colorize the find editor based on whether it has results. */
