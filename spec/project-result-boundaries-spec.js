@@ -66,6 +66,20 @@ describe("Native project result boundaries", () => {
     await searchRows(3);
   });
 
+  it("signals a handled result boundary without requiring a scroll or selection change", async () => {
+    const view = await searchRows(1);
+    await view.selectRow(1);
+    const reveal = spyOn(lumine.scrollbars, "reveal");
+    const before = view.refs.listView.element.scrollTop;
+    lumine.commands.dispatch(view.element, "core:move-down");
+    expect(view.selectedRowIndex).toBe(1);
+    expect(view.refs.listView.element.scrollTop).toBe(before);
+    expect(reveal).toHaveBeenCalledWith(view.refs.listView.element);
+    reveal.calls.reset();
+    view.element.dispatchEvent(new KeyboardEvent("keydown", { key: "q", bubbles: true }));
+    expect(reveal).not.toHaveBeenCalled();
+  });
+
   it("uses each capture when replacing several includes across owned files", async () => {
     const first = path.join(directory, "first.c");
     const second = path.join(directory, "second.c");
