@@ -15,6 +15,12 @@
     "cmdorctrl-shift-f4": "search-panel:replace-all",
     "cmdorctrl-k r": "search-panel:use-selection-as-replace-pattern"
   },
+  // Adapter-backed pane items share search navigation without naming providers.
+  "[data-search-target]": {
+    "f3": "search-panel:find-next",
+    "shift-f3": "search-panel:find-previous",
+    "cmdorctrl-f3": "search-panel:clear"
+  },
   // One block per selector rather than a comma list: calculateSpecificity
   // truncates at the first comma, so every branch would be scored as the first.
   ".search-panel": {

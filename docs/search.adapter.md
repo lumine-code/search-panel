@@ -121,6 +121,8 @@ The panel re-resolves the adapter on every active-pane-item change, and register
 
 When an adapter is active the panel detaches from any text editor entirely, so your adapter is the only thing answering. `deactivate()` is your signal that focus has moved on.
 
+The panel marks the active adapter-backed pane item's root element with `data-search-target` while its search runtime is initialized. This gives the item the panel's shared find-next, find-previous and clear shortcuts, including when the panel is hidden. Providers do not add this attribute or register search-panel commands. The marker is removed when the target changes, its provider disconnects or the panel package deactivates.
+
 `search` is called with the panel's live `findOptions`, not a plain string: read `findPattern` plus the case, regex, and whole-word flags from it so your results match what the checkboxes say.
 
 ## Teardown
