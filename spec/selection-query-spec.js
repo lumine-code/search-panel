@@ -64,8 +64,36 @@ describe("Selection-derived search fields", () => {
     expect(previous).not.toHaveBeenCalled();
     expect(main.findView.findEditor.getText()).toBe("keep");
     expect(main.findView.replaceEditor.getText()).toBe("keep replacement");
-    expect(lumine.notifications.addWarning).toHaveBeenCalled();
+    expect(lumine.notifications.addWarning).toHaveBeenCalledWith(
+      "Unable to use the search selection",
+      {
+        detail:
+          "The selection is too large for a search field.\n\nUse a shorter selection to fill this field. Searching within the full selection remains available.",
+        dismissable: true,
+      },
+    );
     expect(main.findView.refs.descriptionLabel.textContent).toContain("too large");
+  });
+
+  it("keeps an arbitrary selection getter failure below its heading without replacing the query", () => {
+    editor.setText("selected text");
+    editor.selectAll();
+    main.findView.findEditor.setText("keep");
+    const message = String.raw`Cannot read C:\Projects\[demo]\_draft.txt`;
+    const getSelectedText = editor.getSelectedText;
+    const read = spyOn(editor, "getSelectedText").and.throwError(new Error(message));
+    try {
+      expect(main.findView.setSelectionAsFindPattern()).toBe(false);
+      expect(read).toHaveBeenCalledTimes(1);
+      expect(main.findView.findEditor.getText()).toBe("keep");
+      expect(main.findView.refs.descriptionLabel.textContent).toContain(message);
+      expect(lumine.notifications.addWarning).toHaveBeenCalledOnceWith(
+        "Unable to use the search selection",
+        { detail: message, dismissable: true },
+      );
+    } finally {
+      editor.getSelectedText = getSelectedText;
+    }
   });
 
   it("rejects whole-line word fallback before scanning a giant row", () => {
