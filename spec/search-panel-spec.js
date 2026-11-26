@@ -506,7 +506,7 @@ describe("search-panel integration", () => {
 
       const optionClasses = Array.from(
         workspaceElement.querySelectorAll(".search-panel-project .btn-group-options > .btn"),
-      ).map((button) => button.classList[1]);
+      ).map((button) => [...button.classList].find((className) => className.startsWith("option-")));
 
       expect(optionClasses).toEqual([
         "option-regex",
